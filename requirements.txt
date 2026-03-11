@@ -1,0 +1,9 @@
+pynput>=1.8.1
+psutil
+pygetwindow
+requests
+fpdf2
+jinja2
+schedule
+pywin32;platform_system=="Windows"
+pytest
