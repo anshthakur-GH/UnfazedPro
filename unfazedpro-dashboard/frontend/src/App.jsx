@@ -1,18 +1,20 @@
-import React from 'react'
-import Overview from './pages/Overview'
-import Sidebar from './components/Sidebar'
-import NotificationPanel from './components/NotificationPanel'
+import React from 'react';
+import SidebarPremium from './components/SidebarPremium';
+import MainContent from './components/MainContent';
+import RightPanel from './components/RightPanel';
 
-function App() {
+import { ThemeProvider } from './context/ThemeContext';
+
+const App = () => {
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
-      <Sidebar />
-      <main style={{ flex: 1, height: '100vh', overflowY: 'auto', background: 'var(--bg-primary)' }}>
-        <Overview />
-      </main>
-      <NotificationPanel />
-    </div>
-  )
-}
+    <ThemeProvider>
+      <div className="flex h-screen w-screen overflow-hidden bg-base">
+        <SidebarPremium />
+        <MainContent />
+        <RightPanel />
+      </div>
+    </ThemeProvider>
+  );
+};
 
-export default App
+export default App;

@@ -1,0 +1,117 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@layer base {
+  :root {
+    --color-base: #F8FAFC;
+    --color-card: #FFFFFF;
+    --color-card-hover: #F1F5F9;
+    --color-sidebar: #F8FAFC;
+    --color-text-primary: #0F172A;
+    --color-text-secondary: #475569;
+    --color-text-muted: #64748B;
+    --color-border-subtle: rgba(0, 0, 0, 0.05);
+    --color-border-card: rgba(0, 0, 0, 0.08);
+    --color-danger: #EF4444;
+    --color-warning: #F59E0B;
+    --color-accent-primary: #FF7300;
+    --color-accent-secondary: #FFAA00;
+    --color-accent-glow: rgba(255, 115, 0, 0.15);
+  }
+
+  .dark {
+    --color-base: #0D0D0D;
+    --color-card: #161616;
+    --color-card-hover: #1E1E1E;
+    --color-sidebar: #111111;
+    --color-text-primary: #F0F0F0;
+    --color-text-secondary: #888888;
+    --color-text-muted: #555555;
+    --color-border-subtle: rgba(255, 255, 255, 0.06);
+    --color-border-card: rgba(255, 255, 255, 0.09);
+    --color-danger: #FF4D4D;
+    --color-warning: #FFB700;
+    --color-accent-primary: #FF7300;
+    --color-accent-secondary: #FFAA00;
+    --color-accent-glow: rgba(255, 115, 0, 0.15);
+  }
+
+  body {
+    @apply bg-base text-text-primary font-sans antialiased m-0 p-0 overflow-hidden transition-colors duration-300;
+  }
+}
+
+@layer components {
+  .card-premium {
+    @apply bg-card border border-border-card rounded-card shadow-card transition-all duration-200;
+  }
+  
+  .card-premium:hover {
+    @apply -translate-y-[2px] border-accent-glow shadow-[0_4px_12px_var(--color-accent-glow),0_0_0_1px_var(--color-accent-glow)];
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 h-9 rounded-lg text-text-secondary font-medium transition-all duration-200 cursor-pointer;
+  }
+
+  .nav-item:hover {
+    @apply bg-card-hover text-text-primary;
+  }
+
+  .nav-item.active {
+    @apply bg-accent-primary text-white font-semibold;
+  }
+
+  .nav-section-label {
+    @apply text-[10px] uppercase tracking-widest text-text-muted font-bold mb-2 px-3;
+  }
+
+  .kpi-label {
+    @apply text-[11px] uppercase tracking-widest text-text-muted font-bold;
+  }
+
+  .kpi-value {
+    @apply text-3xl font-mono font-bold text-text-primary mt-2 mb-1;
+  }
+
+  .btn-accent {
+    @apply bg-accent-primary text-white font-bold rounded-full py-2 px-4 transition-all hover:bg-accent-secondary;
+  }
+
+  .table-header {
+    @apply text-[10px] uppercase tracking-widest text-text-muted font-bold py-3 px-4 border-b border-border-subtle text-left cursor-pointer hover:text-text-secondary transition-colors;
+  }
+
+  .table-cell {
+    @apply py-3 px-4 border-b border-border-subtle text-sm;
+  }
+
+  /* Custom scrollbar for inner scrollable areas */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--color-card-hover);
+    border-radius: 3px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-muted);
+  }
+}
+
+/* Animations */
+@keyframes sparkline-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-draw-svg path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: sparkline-draw 1.5s ease-out forwards;
+}
