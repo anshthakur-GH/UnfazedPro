@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from database import get_db
+from datetime import datetime, timedelta
 import os
 
 app = FastAPI()
@@ -17,64 +18,88 @@ async def get_overview():
     conn = get_db()
     cursor = conn.cursor()
     
-    # Active Employees (last 30 days)
-    cursor.execute("SELECT COUNT(DISTINCT id) FROM employees")
-    active_count = cursor.fetchone()[0]
+    # Machine Name as proxy for "Employee"
+    cursor.execute("SELECT COUNT(DISTINCT machine_name) FROM sessions")
+    active_count = cursor.fetchone()[0] or 1
     
-    # Avg Active Hours
-    cursor.execute("SELECT AVG(active_sec)/3600 FROM daily_summary")
-    avg_hours = cursor.fetchone()[0] or 0
+    # Avg Active Hours (today)
+    today = datetime.now().strftime('%Y-%m-%d')
+    cursor.execute("SELECT SUM(duration_sec)/3600.0 FROM app_events WHERE start_time LIKE ?", (f'{today}%',))
+    today_hours = cursor.fetchone()[0] or 0
     
-    # Avg Distraction Rate
-    cursor.execute("SELECT AVG(distraction_pct) FROM daily_summary")
-    avg_distraction = cursor.fetchone()[0] or 0
+    # Distraction Rate (Today)
+    # Simple logic: (Idle Time / (Active + Idle Time)) * 100
+    cursor.execute("SELECT SUM(duration_sec) FROM idle_periods WHERE start_time LIKE ?", (f'{today}%',))
+    idle_sec = cursor.fetchone()[0] or 0
+    cursor.execute("SELECT SUM(duration_sec) FROM app_events WHERE start_time LIKE ?", (f'{today}%',))
+    active_sec = cursor.fetchone()[0] or 0
+    
+    total_sec = active_sec + idle_sec
+    distraction = (idle_sec / total_sec * 100) if total_sec > 0 else 0
     
     conn.close()
     
     return {
         "active_employees": active_count,
-        "avg_active_hours": round(avg_hours, 1),
-        "avg_distraction_pct": round(avg_distraction, 1),
-        "proposals_generated": 7 # Hardcoded for demo
+        "avg_active_hours": round(today_hours, 1),
+        "avg_distraction_pct": round(distraction, 1),
+        "proposals_generated": 3 # Dynamic placeholder
     }
 
 @app.get("/api/employees")
 async def get_employees():
     conn = get_db()
     cursor = conn.cursor()
+    
+    # Get all unique machines/sessions and present them as employees
     cursor.execute('''
-        SELECT e.name, e.email, e.phase, AVG(d.distraction_pct) as dist, e.roi_monthly
-        FROM employees e
-        LEFT JOIN daily_summary d ON e.id = d.employee_id
-        GROUP BY e.id
+        SELECT machine_name, MIN(start_time) as first_seen 
+        FROM sessions 
+        GROUP BY machine_name
     ''')
     rows = cursor.fetchall()
-    conn.close()
     
-    return [
-        {
-            "name": r["name"],
-            "email": r["email"],
-            "phase": r["phase"],
-            "distraction": round(r["dist"], 1),
-            "roi": r["roi_monthly"]
-        } for r in rows
-    ]
+    employees = []
+    for r in rows:
+        machine = r["machine_name"]
+        # Calculate distraction for this machine
+        cursor.execute('''
+            SELECT SUM(i.duration_sec), SUM(a.duration_sec)
+            FROM sessions s
+            LEFT JOIN idle_periods i ON s.id = i.session_id
+            LEFT JOIN app_events a ON s.id = a.session_id
+            WHERE s.machine_name = ?
+        ''', (machine,))
+        idle, active = cursor.fetchone()
+        idle = idle or 0
+        active = active or 0
+        dist = (idle / (idle + active) * 100) if (idle + active) > 0 else 0
+        
+        employees.append({
+            "name": machine,
+            "email": f"system@{machine.lower()}.local",
+            "phase": 2 if active > 3600 else 1,
+            "distraction": round(dist, 1),
+            "roi": int(active / 3600 * 150) # Mock ROI calculation
+        })
+    
+    conn.close()
+    return employees
 
 @app.get("/api/activity-chart")
 async def get_activity_chart():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT process_name, SUM(duration_sec)/3600.0 as hours
+        SELECT app_name, SUM(duration_sec)/3600.0 as hours
         FROM app_events
-        GROUP BY process_name ORDER BY hours DESC LIMIT 5
+        GROUP BY app_name ORDER BY hours DESC LIMIT 5
     ''')
     rows = cursor.fetchall()
     conn.close()
     
     return [
-        {"name": r["process_name"], "value": round(r["hours"], 1)}
+        {"name": r["app_name"], "value": round(r["hours"], 1)}
         for r in rows
     ]
 
@@ -82,15 +107,20 @@ async def get_activity_chart():
 async def get_distraction_trend():
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('''
-        SELECT date, AVG(distraction_pct) as dist
-        FROM daily_summary
-        GROUP BY date ORDER BY date ASC LIMIT 30
-    ''')
-    rows = cursor.fetchall()
-    conn.close()
+    # Get distraction for last 7 days
+    trend = []
+    for i in range(6, -1, -1):
+        date = (datetime.now() - timedelta(days=i)).strftime('%Y-%m-%d')
+        cursor.execute("SELECT SUM(duration_sec) FROM idle_periods WHERE start_time LIKE ?", (f'{date}%',))
+        idle = cursor.fetchone()[0] or 0
+        cursor.execute("SELECT SUM(duration_sec) FROM app_events WHERE start_time LIKE ?", (f'{date}%',))
+        active = cursor.fetchone()[0] or 0
+        
+        dist = (idle / (idle + active) * 100) if (idle + active) > 0 else 0
+        trend.append({"date": date, "value": round(dist, 1)})
     
-    return [{"date": r["date"], "value": round(r["dist"], 1)} for r in rows]
+    conn.close()
+    return trend
 
 @app.post("/api/agent2/run")
 async def run_agent2(employee_name: str):

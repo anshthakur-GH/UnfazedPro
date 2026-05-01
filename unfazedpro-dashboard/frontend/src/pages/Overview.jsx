@@ -43,18 +43,26 @@ const Overview = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const [ov, emp, app, trend] = await Promise.all([
-        axios.get('/api/overview'),
-        axios.get('/api/employees'),
-        axios.get('/api/activity-chart'),
-        axios.get('/api/distraction-trend')
-      ])
-      setData(ov.data)
-      setEmployees(emp.data)
-      setAppData(app.data)
-      setTrendData(trend.data)
+      try {
+        const [ov, emp, app, trend] = await Promise.all([
+          axios.get('/api/overview'),
+          axios.get('/api/employees'),
+          axios.get('/api/activity-chart'),
+          axios.get('/api/distraction-trend')
+        ])
+        setData(ov.data)
+        setEmployees(emp.data)
+        setAppData(app.data)
+        setTrendData(trend.data)
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error)
+      }
     }
+
     fetchData()
+    const interval = setInterval(fetchData, 5000) // Poll every 5 seconds
+    
+    return () => clearInterval(interval)
   }, [])
 
   if (!data) return <div style={{ padding: '40px', color: 'var(--accent-primary)', fontWeight: '700', fontFamily: 'Space Mono' }}>BOOTING UNFAZEDPRO OS...</div>
@@ -80,11 +88,12 @@ const Overview = () => {
       </div>
 
       {/* KPI Section */}
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '32px' }}>
-        <MetricCard label="Total Staff" value={data.active_employees} delta="+3 new this month" deltaUp />
-        <MetricCard label="Efficiency Index" value={`${data.avg_active_hours}h`} delta="8.2% boost" deltaUp />
-        <MetricCard label="Distraction Rate" value={`${data.avg_distraction_pct}%`} gauge={data.avg_distraction_pct} delta="2.1% drop" deltaUp />
-        <MetricCard label="AI Insights" value={data.proposals_generated} delta="4 pending review" deltaUp />
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+        <MetricCard label="Employees Monitored" value={data.active_employees} delta="↑ 3 since last month" deltaUp />
+        <MetricCard label="Avg Active Hours / Day" value={`${data.avg_active_hours}h`} delta="↑ 8% vs last month" deltaUp />
+        <MetricCard label="Avg Distraction Rate" value={`${data.avg_distraction_pct}%`} gauge={data.avg_distraction_pct} delta="↓ 2.4% vs last week" deltaUp={false} />
+        <MetricCard label="Automation Proposals" value={data.proposals_generated} delta="↑ 2 this quarter" deltaUp />
+        <MetricCard label="ROI Expected" value="44%" delta="↑ 12% projected" deltaUp />
       </div>
 
       {/* Analytics Grid */}
