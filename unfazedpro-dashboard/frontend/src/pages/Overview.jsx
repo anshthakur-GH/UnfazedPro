@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { TrendingUp, TrendingDown, MoreVertical, RefreshCw, Moon, Bell, Globe, ChevronDown, Zap } from 'lucide-react'
+import { TrendingUp, TrendingDown, MoreVertical, RefreshCw, Moon, Bell, Globe, ChevronDown, Zap, Settings } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts'
 
 const MetricCard = ({ label, value, delta, deltaUp, gauge }) => (
