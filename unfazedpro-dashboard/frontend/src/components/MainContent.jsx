@@ -10,49 +10,50 @@ const formatCurrency = (value) => {
 };
 
 const KPICard = ({ title, value, prefix = '', suffix = '', trend, trendLabel, type = 'number', progress = 0 }) => {
-  // Simple check to ensure value is a number for counting
   const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
   const animatedValue = useCountUp(numValue, 1500);
   
   return (
-    <div className="card-premium p-5 flex flex-col justify-between relative overflow-hidden group min-h-[140px]">
-      <div className="flex justify-between items-start">
+    <div className="card-premium p-6 flex flex-col justify-between relative overflow-hidden group h-[160px]">
+      <div className="flex justify-between items-start z-10">
         <span className="kpi-label">{title}</span>
+        {type === 'progress' && (
+          <div className="w-14 h-14 relative shrink-0">
+            <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
+              <circle cx="50" cy="50" r="45" fill="transparent" stroke="var(--color-border-card)" strokeWidth="10" />
+              <circle 
+                cx="50" cy="50" r="45" 
+                fill="transparent" 
+                stroke="var(--color-accent-primary)" 
+                strokeWidth="10" 
+                strokeDasharray="282.7" 
+                strokeDashoffset={282.7 - (282.7 * animatedValue) / 100}
+                className="transition-all duration-1000 ease-out"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold">
+              {animatedValue}%
+            </div>
+          </div>
+        )}
       </div>
       
-      <div className="mt-4 z-10 relative">
-        <div className="kpi-value">
+      <div className="z-10 relative">
+        <div className="kpi-value text-4xl">
           {prefix}{type === 'number' ? animatedValue.toLocaleString() : value}{suffix}
         </div>
         
         {trend !== undefined && (
-          <div className={`flex items-center gap-1.5 text-xs font-semibold ${trend > 0 ? 'text-accent-primary' : 'text-danger'}`}>
+          <div className={`flex items-center gap-1.5 text-xs font-semibold mt-1 ${trend > 0 ? 'text-accent-primary' : 'text-danger'}`}>
             {trend > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
             <span>{trendLabel || `${Math.abs(trend)}% vs last month`}</span>
           </div>
         )}
       </div>
 
-      {type === 'progress' && (
-        <div className="absolute top-4 right-4 w-16 h-16">
-          <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-            <circle cx="50" cy="50" r="45" fill="transparent" stroke="var(--border-card)" strokeWidth="8" />
-            <circle 
-              cx="50" cy="50" r="45" 
-              fill="transparent" 
-              stroke="var(--accent-primary)" 
-              strokeWidth="8" 
-              strokeDasharray="282.7" 
-              strokeDashoffset={282.7 - (282.7 * animatedValue) / 100}
-              className="transition-all duration-1000 ease-out"
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center text-sm font-mono font-bold">
-            {animatedValue}%
-          </div>
-        </div>
-      )}
+      {/* Subtle background element for decoration */}
+      <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-accent-primary/5 blur-3xl rounded-full group-hover:bg-accent-primary/10 transition-colors"></div>
     </div>
   );
 };
