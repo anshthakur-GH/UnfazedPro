@@ -15,7 +15,7 @@ const KPICard = ({ title, value, prefix = '', suffix = '', trend, trendLabel, ty
   
   return (
     <div className="card-premium p-6 flex flex-col justify-between relative overflow-hidden group h-[160px]">
-      <div className="flex justify-between items-start z-10">
+      <div className="flex justify-between items-center z-10">
         <span className="kpi-label">{title}</span>
         {type === 'progress' && (
           <div className="w-14 h-14 relative shrink-0">
