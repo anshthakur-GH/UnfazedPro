@@ -4,7 +4,7 @@ import { LayoutGrid, Users, BarChart3, ShieldAlert, FileText, History, Settings,
 const SidebarItem = ({ icon: Icon, label, active }) => (
   <div style={{
     display: 'flex',
-    alignItems: center,
+    alignItems: 'center',
     gap: '12px',
     padding: '10px 16px',
     borderRadius: '8px',
@@ -31,7 +31,7 @@ const Sidebar = () => {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
         <div style={{ width: '32px', height: '32px', background: 'var(--accent-green)', borderRadius: '6px' }}></div>
-        <span style={{ fontSize: '18px', fontWeight: '700', letter-spacing: '-0.5px' }}>UnfazedPro</span>
+        <span style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.5px' }}>UnfazedPro</span>
       </div>
 
       <div style={{

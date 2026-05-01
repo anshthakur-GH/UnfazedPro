@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UnfazedPro Intelligence Dashboard</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts/umd/Recharts.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #111111;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #222222;
+            --bg-sidebar: #141414;
+            --accent-green: #a8ff3e;
+            --accent-green-dim: #6fcf2a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #555555;
+            --border-color: #2a2a2a;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+        }
+        .metric-value { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+        .metric-label { font-size: 11px; font-weight: 400; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-track { background: var(--bg-primary); }
+        .custom-scroll::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip: RechartsTooltip } = Recharts;
+
+        // Icons from Lucide
+        const Icon = ({ name, size = 18, color = "currentColor", className = "" }) => {
+            useEffect(() => { lucide.createIcons(); }, []);
+            return <i data-lucide={name} style={{ width: size, height: size, color }} className={className}></i>;
+        };
+
+        const SidebarItem = ({ icon, label, active }) => (
+            <div className={`flex items-center gap-3 px-4 py-2.5 rounded-lg cursor-pointer mb-1 ${active ? 'bg-[#a8ff3e] text-[#111] font-semibold' : 'text-[#a0a0a0] hover:bg-[#222]'}`}>
+                <Icon name={icon} size={18} />
+                <span className="text-[13px]">{label}</span>
+            </div>
+        );
+
+        const MetricCard = ({ label, value, delta, deltaUp, gauge }) => (
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5 flex-1">
+                <div className="metric-label mb-2">{label}</div>
+                <div className="flex items-center gap-4">
+                    <div className="metric-value">{value}</div>
+                    {gauge && (
+                        <div className="w-10 h-10">
+                            <svg viewBox="0 0 36 36" className="rotate-[-90deg]">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#222" strokeWidth="3" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#a8ff3e" strokeWidth="3" strokeDasharray={`${gauge}, 100`} />
+                            </svg>
+                        </div>
+                    )}
+                </div>
+                <div className={`text-[11px] font-medium mt-2 flex items-center gap-1 ${deltaUp ? 'text-[#a8ff3e]' : 'text-[#ff4444]'}`}>
+                    <Icon name={deltaUp ? "trending-up" : "trending-down"} size={12} />
+                    {delta}
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            const [data, setData] = useState(null);
+            const [employees, setEmployees] = useState([]);
+            const [appData, setAppData] = useState([]);
+            const [trendData, setTrendData] = useState([]);
+
+            useEffect(() => {
+                const fetchAll = async () => {
+                    try {
+                        const [ov, emp, app, trend] = await Promise.all([
+                            fetch('http://localhost:8000/api/overview').then(r => r.json()),
+                            fetch('http://localhost:8000/api/employees').then(r => r.json()),
+                            fetch('http://localhost:8000/api/activity-chart').then(r => r.json()),
+                            fetch('http://localhost:8000/api/distraction-trend').then(r => r.json())
+                        ]);
+                        setData(ov);
+                        setEmployees(emp);
+                        setAppData(app);
+                        setTrendData(trend);
+                    } catch (e) {
+                        console.error("Failed to connect to backend", e);
+                    }
+                };
+                fetchAll();
+                const interval = setInterval(fetchAll, 5000);
+                return () => clearInterval(interval);
+            }, []);
+
+            if (!data) return <div className="h-screen w-screen flex items-center justify-center bg-[#111] text-[#a8ff3e] font-mono">INITIALIZING UNFAZEDPRO SYSTEM...</div>;
+
+            return (
+                <div className="flex h-screen overflow-hidden">
+                    {/* Sidebar */}
+                    <div className="w-[220px] bg-[#141414] border-r border-[#2a2a2a] p-5 flex flex-col">
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="w-8 h-8 bg-[#a8ff3e] rounded-md flex items-center justify-center text-[#111] font-bold">U</div>
+                            <span className="text-lg font-bold tracking-tighter">UnfazedPro</span>
+                        </div>
+
+                        <div className="bg-[#222] px-3 py-2 rounded-md flex items-center gap-2 mb-6">
+                            <Icon name="search" size={14} color="#555" />
+                            <span className="text-[12px] text-[#555]">Search...</span>
+                            <span className="ml-auto text-[10px] text-[#555]">⌘K</span>
+                        </div>
+
+                        <div className="text-[10px] font-bold text-[#555] uppercase tracking-widest mb-3">Dashboards</div>
+                        <SidebarItem icon="layout-grid" label="Overview" active />
+                        <SidebarItem icon="users" label="Employees" />
+                        <SidebarItem icon="bar-chart-3" label="Analytics" />
+                        <SidebarItem icon="shield-alert" label="Agents" />
+
+                        <div className="text-[10px] font-bold text-[#555] uppercase tracking-widest mb-3 mt-6">Settings</div>
+                        <SidebarItem icon="file-text" label="Reports" />
+                        <SidebarItem icon="history" label="Audit Log" />
+                        <SidebarItem icon="settings" label="Settings" />
+
+                        <div className="mt-auto flex items-center gap-2">
+                            <div className="text-[#a8ff3e] font-black text-xs">◌◌◌</div>
+                            <span className="font-bold text-[11px] text-[#555]">UNFAZEDPRO PLATFORM</span>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 flex flex-col h-screen overflow-hidden bg-[#111]">
+                        {/* Top Bar */}
+                        <div className="h-12 border-b border-[#2a2a2a] flex items-center justify-between px-6">
+                            <div className="text-[13px] text-[#a0a0a0]">Dashboards / <span className="text-[#fff] font-semibold">Overview</span></div>
+                            <div className="flex items-center gap-5 text-[#a0a0a0]">
+                                <Icon name="moon" size={18} /> <Icon name="refresh-cw" size={18} /> <Icon name="bell" size={18} /> <Icon name="globe" size={18} />
+                            </div>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div className="flex-1 overflow-y-auto p-6 custom-scroll">
+                            <div className="flex items-center justify-between mb-6">
+                                <h1 className="text-base font-semibold">Overview</h1>
+                                <div className="flex items-center gap-2 px-3 py-1 border border-[#2a2a2a] rounded-md text-xs cursor-pointer bg-[#1a1a1a]">
+                                    Today <Icon name="chevron-down" size={14} />
+                                </div>
+                            </div>
+
+                            {/* KPI Grid */}
+                            <div className="flex gap-4 mb-6">
+                                <MetricCard label="Active Employees" value={data.active_employees} delta="↑ 3 since last month" deltaUp />
+                                <MetricCard label="Avg Daily Hours" value={`${data.avg_active_hours}h`} delta="↑ 8% vs last month" deltaUp />
+                                <MetricCard label="Distraction Rate" value={`${data.avg_distraction_pct}%`} gauge={data.avg_distraction_pct} delta="↓ 2.4% vs last month" deltaUp />
+                                <MetricCard label="Automation Proposals" value={data.proposals_generated} delta="↑ 2 this quarter" deltaUp />
+                            </div>
+
+                            {/* Middle Grid */}
+                            <div className="grid grid-cols-3 gap-4 mb-6">
+                                <div className="col-span-2 bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-6">
+                                    <div className="flex justify-between mb-6">
+                                        <div className="text-[13px] font-medium">Activity Overview</div>
+                                        <Icon name="more-vertical" size={16} className="text-[#555]" />
+                                    </div>
+                                    <div className="flex gap-10">
+                                        <div className="w-[180px] h-[180px] relative">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <PieChart>
+                                                    <Pie data={appData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                                                        {appData.map((entry, index) => (
+                                                            <Cell key={`cell-${index}`} fill={index === 0 ? '#a8ff3e' : `rgba(168, 255, 62, ${0.8 - index * 0.2})`} />
+                                                        ))}
+                                                    </Pie>
+                                                </PieChart>
+                                            </ResponsiveContainer>
+                                            <div className="absolute top-1/2 left-1/2 translate-x-[-50%] translate-y-[-50%] text-center">
+                                                <div className="text-xl font-bold">142k</div>
+                                                <div className="text-[10px] text-[#555]">Events</div>
+                                            </div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="bg-[#222] p-4 rounded-xl mb-4">
+                                                <div className="metric-label">Total Keystrokes</div>
+                                                <div className="text-xl font-bold mt-1">1.24M</div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                                                {appData.map((app, i) => (
+                                                    <div key={app.name} className="flex justify-between text-[11px] pb-2 border-b border-[#2a2a2a]">
+                                                        <span className="text-[#a0a0a0]">● {app.name}</span>
+                                                        <span>{app.value}h</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-4">
+                                    <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-5 flex-1 flex flex-col justify-between">
+                                        <div className="metric-label">Distraction Trend</div>
+                                        <div className="h-24">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <AreaChart data={trendData}>
+                                                    <defs>
+                                                        <linearGradient id="colorDist" x1="0" y1="0" x2="0" y2="1">
+                                                            <stop offset="5%" stopColor="#a8ff3e" stopOpacity={0.3}/>
+                                                            <stop offset="95%" stopColor="#a8ff3e" stopOpacity={0}/>
+                                                        </linearGradient>
+                                                    </defs>
+                                                    <Area type="monotone" dataKey="value" stroke="#a8ff3e" fillOpacity={1} fill="url(#colorDist)" />
+                                                </AreaChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gradient-to-br from-[#1a1a1a] to-[#1e3a1a] rounded-xl border border-[#6fcf2a] p-6 relative overflow-hidden">
+                                        <div className="absolute top-4 right-4 w-8 h-8 bg-[#a8ff3e] rounded-full flex items-center justify-center text-[#111]">⚡</div>
+                                        <div className="text-base font-bold mb-2">Agent 2 Ready</div>
+                                        <div className="text-xs text-[#a0a0a0] mb-5">Run Automation Analysis for Aryan Mehta</div>
+                                        <button className="w-full bg-[#a8ff3e] text-[#111] rounded-3xl py-2.5 font-bold text-sm hover:scale-[1.02] transition-transform">Run Agent 2 Now</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Table */}
+                            <div className="bg-[#1a1a1a] rounded-xl border border-[#2a2a2a] p-6 mb-8">
+                                <div className="flex justify-between mb-6">
+                                    <h2 className="text-base font-semibold">Employee List</h2>
+                                    <Icon name="more-vertical" size={16} className="text-[#555]" />
+                                </div>
+                                <table className="w-full border-collapse">
+                                    <thead>
+                                        <tr className="text-left border-b border-[#2a2a2a] text-[#a0a0a0] text-[11px] uppercase tracking-wider">
+                                            <th className="pb-3 font-medium">Name</th>
+                                            <th className="pb-3 font-medium">Phase</th>
+                                            <th className="pb-3 font-medium">Distraction Rate</th>
+                                            <th className="pb-3 font-medium">ROI Potential</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="text-[13px]">
+                                        {employees.map((emp, i) => (
+                                            <tr key={emp.name} className={`border-b border-[#2a2a2a] ${i === employees.length-1 ? 'border-b-0' : ''}`}>
+                                                <td className="py-4 flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-[#333] flex items-center justify-center text-xs font-bold">{emp.name[0]}</div>
+                                                    <div>
+                                                        <div className="font-semibold">{emp.name}</div>
+                                                        <div className="text-[11px] text-[#555]">{emp.email}</div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span className={`px-2 py-1 rounded-2xl text-[10px] font-medium ${emp.phase === 2 ? 'bg-[#a8ff3e26] text-[#a8ff3e] border border-[#a8ff3e4d]' : 'bg-[#222] text-[#a0a0a0]'}`}>
+                                                        Phase {emp.phase} {emp.phase === 2 ? '(Visual)' : '(Metadata)'}
+                                                    </span>
+                                                </td>
+                                                <td className={emp.distraction > 25 ? 'text-[#ff4444]' : emp.distraction > 15 ? 'text-amber-400' : 'text-[#a8ff3e]'}>
+                                                    {emp.distraction}%
+                                                </td>
+                                                <td className="font-medium">{emp.roi ? `₹${emp.roi.toLocaleString()}/mo` : 'Pending'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Panel */}
+                    <div className="w-[240px] bg-[#141414] border-l border-[#2a2a2a] p-5 flex flex-col overflow-y-auto custom-scroll">
+                        <div className="text-[13px] font-bold mb-5">Notifications</div>
+                        <div className="flex flex-col gap-5">
+                            <NotificationItem title="Phase 2 activated for Aryan Mehta." time="Just now" icon="zap" />
+                            <NotificationItem title="Daily report generated — 24 employees." time="1 hour ago" icon="file-text" color="#555" />
+                            <NotificationItem title="Agent 1 completed for Priya Sharma." time="6 hours ago" icon="check" />
+                        </div>
+
+                        <div className="text-[13px] font-bold mb-5 mt-10">Activities</div>
+                        <div className="flex flex-col gap-5">
+                            <NotificationItem title="New sequence folder assembled." time="Just now" icon="package" color="#555" />
+                            <NotificationItem title="203 app events logged today." time="47 minutes ago" icon="activity" />
+                        </div>
+
+                        <div className="text-[13px] font-bold mb-5 mt-10">Monitored Employees</div>
+                        <div className="flex flex-col gap-2">
+                            {employees.slice(0, 5).map((emp, i) => (
+                                <div key={emp.name} className={`flex items-center gap-3 p-2 rounded-lg ${i === 2 ? 'bg-[#a8ff3e] text-[#111]' : 'text-[#fff]'}`}>
+                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 2 ? 'bg-[#111] text-[#fff]' : 'bg-[#333]'}`}>{emp.name[0]}</div>
+                                    <div className="text-[12px] font-medium flex-1 truncate">{emp.name}</div>
+                                    {i === 2 && <div className="flex gap-1"><Icon name="mail" size={12} /> <Icon name="phone" size={12} /></div>}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const NotificationItem = ({ title, time, icon, color = "#a8ff3e" }) => (
+            <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-[10px]" style={{ background: color === '#a8ff3e' ? '#a8ff3e' : '#333', color: color === '#a8ff3e' ? '#111' : '#fff' }}>
+                    <Icon name={icon} size={14} />
+                </div>
+                <div>
+                    <div className="text-[12px] font-medium leading-tight">{title}</div>
+                    <div className="text-[11px] text-[#555] mt-1">{time}</div>
+                </div>
+            </div>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
