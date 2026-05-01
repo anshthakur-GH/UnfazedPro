@@ -94,7 +94,7 @@ const Overview = () => {
                 <PieChart>
                   <Pie data={appData} innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
                     {appData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--accent-green)' : `rgba(255, 107, 0, ${0.8 - index * 0.2})`} />
+                      <Cell key={`cell-${index}`} fill={index === 0 ? 'var(--accent-green)' : `rgba(168, 255, 62, ${0.8 - index * 0.2})`} />
                     ))}
                   </Pie>
                 </PieChart>
@@ -140,7 +140,7 @@ const Overview = () => {
               </div>
            </div>
            <div style={{ 
-             background: 'linear-gradient(135deg, var(--bg-secondary) 0%, #3a1e1a 100%)', 
+             background: 'linear-gradient(135deg, var(--bg-secondary) 0%, #1e3a1a 100%)', 
              borderRadius: '12px', 
              border: '1px solid var(--accent-green-dim)', 
              padding: '24px',
@@ -185,7 +185,7 @@ const Overview = () => {
                     padding: '4px 8px', 
                     borderRadius: '20px', 
                     fontSize: '11px',
-                    background: emp.phase === 2 ? 'rgba(255, 107, 0, 0.15)' : 'var(--bg-tertiary)',
+                    background: emp.phase === 2 ? 'rgba(168, 255, 62, 0.15)' : 'var(--bg-tertiary)',
                     color: emp.phase === 2 ? 'var(--accent-green)' : 'var(--text-secondary)',
                     border: emp.phase === 2 ? '1px solid var(--accent-green-dim)' : 'none'
                   }}>
