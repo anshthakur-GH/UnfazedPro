@@ -289,12 +289,12 @@ const MainContent = () => {
           <div className="z-10">
             <span className="inline-block px-2.5 py-1 bg-accent-primary/10 text-accent-primary border border-accent-primary/20 rounded-full text-xs font-bold mb-4">AGENT 2 READY</span>
             <div className="mb-2">
-              <span className="text-4xl font-mono font-bold text-text-primary">Run Analysis</span>
+              <span className="text-4xl font-mono font-bold text-white">Run Analysis</span>
             </div>
-            <p className="text-text-secondary text-sm mb-6 leading-relaxed">
+            <p className="text-white/70 text-sm mb-6 leading-relaxed">
               Aryan Mehta · {Math.round(data.avg_active_hours * 120)} sequences captured
             </p>
-            <button className="w-full bg-accent-primary hover:bg-[#FF8800] text-base font-bold py-3 px-4 rounded-full transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(255,115,0,0.3)]">
+            <button className="w-full bg-accent-primary hover:bg-[#FF8800] text-base font-bold py-3 px-4 rounded-full transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(255,115,0,0.3)] text-white">
               Run Agent 2 Now
             </button>
           </div>
