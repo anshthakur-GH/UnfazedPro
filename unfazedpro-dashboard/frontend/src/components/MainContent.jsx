@@ -121,7 +121,7 @@ const MainContent = () => {
         {/* App Events Overview */}
         <div className="col-span-6 card-premium p-6">
           <div className="flex justify-between items-start mb-6">
-            <h2 className="text-base font-bold">App Events Overview</h2>
+            <h2 className="text-base font-bold text-text-primary">App Events Overview</h2>
             <button className="text-text-muted hover:text-text-primary"><MoreVertical size={18} /></button>
           </div>
           
@@ -243,7 +243,7 @@ const MainContent = () => {
         {/* Employee Table */}
         <div className="col-span-8 card-premium overflow-hidden flex flex-col">
           <div className="p-5 border-b border-border-card flex justify-between items-center">
-            <h2 className="text-base font-bold">Employee List</h2>
+            <h2 className="text-base font-bold text-text-primary">Employee List</h2>
             <button className="text-xs font-bold text-accent-primary hover:text-accent-secondary uppercase tracking-widest transition-colors flex items-center gap-1">
               View All <ArrowRight size={14} />
             </button>
