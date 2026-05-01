@@ -1,0 +1,73 @@
+{
+    "metadata": {
+        "generated_at": "2026-05-01 10:26:46",
+        "period": {
+            "start": "2026-04-01 10:26:46",
+            "end": "2026-05-01 10:26:46"
+        }
+    },
+    "summary": {
+        "total_monitored_hours": 0.024444444444444446,
+        "total_keystrokes": 8
+    },
+    "sessions": [
+        {
+            "start": "2026-05-01 10:25:02",
+            "end": null,
+            "machine": "AnshPC"
+        }
+    ],
+    "daily_apps": [
+        {
+            "date": "2026-05-01",
+            "app": "Antigravity.exe",
+            "duration_min": 1.4666666666666666
+        }
+    ],
+    "app_breakdown": [
+        {
+            "app": "Antigravity.exe",
+            "duration_min": 1.4666666666666666
+        }
+    ],
+    "browser_details": [],
+    "search_queries": [],
+    "idle_analysis": {
+        "total_idle_min": 0.0,
+        "avg_idle_sec": 0
+    },
+    "transitions": [],
+    "mouse_stats": [
+        {
+            "event": "click_left",
+            "count": 7
+        }
+    ],
+    "hotkey_stats": [],
+    "activity_timeline": [
+        {
+            "time": "2026-05-01 10:26:30",
+            "type": "App",
+            "source": "Antigravity.exe",
+            "detail": "Local System Monitoring System - Antigravity - report_20260311_182850.pdf"
+        },
+        {
+            "time": "2026-05-01 10:26:29",
+            "type": "App",
+            "source": "Antigravity.exe",
+            "detail": "Local System Monitoring System - Antigravity - report_20260311_000834.pdf"
+        },
+        {
+            "time": "2026-05-01 10:26:02",
+            "type": "App",
+            "source": "Antigravity.exe",
+            "detail": "Local System Monitoring System - Antigravity - report_20260311_183509.json"
+        },
+        {
+            "time": "2026-05-01 10:25:02",
+            "type": "App",
+            "source": "Antigravity.exe",
+            "detail": "Local System Monitoring System - Antigravity - report_20260311_000834.pdf"
+        }
+    ]
+}

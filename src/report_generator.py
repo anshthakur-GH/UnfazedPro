@@ -1,6 +1,7 @@
 from fpdf import FPDF
 import sqlite3
 import os
+import json
 from datetime import datetime, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'monitor.db')
@@ -51,7 +52,7 @@ class ReportGenerator(FPDF):
         
         # Top App
         cursor.execute('''
-            SELECT app_name, SUM(duration_sec) as total_dur FROM app_events
+            SELECT app_name, COALESCE(SUM(duration_sec), 0) as total_dur FROM app_events
             WHERE start_time >= ? AND start_time <= ?
             GROUP BY app_name ORDER BY total_dur DESC LIMIT 1
         ''', (start_date, end_date))
@@ -59,7 +60,7 @@ class ReportGenerator(FPDF):
         
         # Top Website
         cursor.execute('''
-            SELECT domain, SUM(duration_sec) as total_dur FROM browser_events
+            SELECT domain, COALESCE(SUM(duration_sec), 0) as total_dur FROM browser_events
             WHERE start_time >= ? AND start_time <= ?
             GROUP BY domain ORDER BY total_dur DESC LIMIT 1
         ''', (start_date, end_date))
@@ -76,9 +77,9 @@ class ReportGenerator(FPDF):
         self.cell(0, 10, f'Total Time Monitored: {total_hours:.2f} hours', 0, 1)
         self.cell(0, 10, f'Total Keystrokes: {total_keys}', 0, 1)
         self.cell(0, 10, f'Current System Uptime: {uptime_hours:.2f} hours', 0, 1)
-        if top_app:
+        if top_app and top_app[1] is not None:
             self.cell(0, 10, self._safe_str(f'Top Application: {top_app[0]} ({top_app[1]/60:.1f} mins)'), 0, 1)
-        if top_site:
+        if top_site and top_site[1] is not None:
             self.cell(0, 10, self._safe_str(f'Top Website: {top_site[0]} ({top_site[1]/60:.1f} mins)'), 0, 1)
         
         self.ln(10)
@@ -87,7 +88,7 @@ class ReportGenerator(FPDF):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT app_name, SUM(duration_sec) as total_dur FROM app_events
+            SELECT app_name, COALESCE(SUM(duration_sec), 0) as total_dur FROM app_events
             WHERE start_time >= ? AND start_time <= ?
             GROUP BY app_name ORDER BY total_dur DESC
         ''', (start_date, end_date))
@@ -113,7 +114,7 @@ class ReportGenerator(FPDF):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT domain, url, SUM(duration_sec) as total_dur FROM browser_events
+            SELECT domain, url, COALESCE(SUM(duration_sec), 0) as total_dur FROM browser_events
             WHERE start_time >= ? AND start_time <= ?
             GROUP BY url ORDER BY total_dur DESC LIMIT 10
         ''', (start_date, end_date))
@@ -121,7 +122,7 @@ class ReportGenerator(FPDF):
         # Fallback to app_events if browser_events is empty
         if not urls:
             cursor.execute('''
-                SELECT DISTINCT window_title, SUM(duration_sec) 
+                SELECT DISTINCT window_title, COALESCE(SUM(duration_sec), 0) 
                 FROM app_events
                 WHERE (app_name LIKE '%comet%' OR app_name LIKE '%chrome%' OR app_name LIKE '%firefox%')
                   AND start_time >= ? AND start_time <= ?
@@ -205,7 +206,7 @@ class ReportGenerator(FPDF):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT date(start_time) as d, app_name, SUM(duration_sec) as total_dur 
+            SELECT date(start_time) as d, app_name, COALESCE(SUM(duration_sec), 0) as total_dur 
             FROM app_events
             WHERE start_time >= ? AND start_time <= ?
             GROUP BY d, app_name
@@ -442,6 +443,117 @@ class ReportGenerator(FPDF):
         print(f"Report generated: {file_path}")
         return file_path
 
+    def export_json(self, days=7):
+        end_date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d %H:%M:%S')
+        
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        data = {
+            "metadata": {
+                "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "period": {"start": start_date, "end": end_date}
+            },
+            "summary": {},
+            "sessions": [],
+            "daily_apps": [],
+            "app_breakdown": [],
+            "browser_details": [],
+            "search_queries": [],
+            "idle_analysis": {},
+            "transitions": [],
+            "mouse_stats": [],
+            "hotkey_stats": []
+        }
+        
+        # 1. Summary
+        cursor.execute("SELECT SUM(duration_sec) FROM app_events WHERE start_time >= ? AND start_time <= ?", (start_date, end_date))
+        data["summary"]["total_monitored_hours"] = (cursor.fetchone()[0] or 0) / 3600
+        cursor.execute("SELECT COUNT(*) FROM keystrokes WHERE timestamp >= ? AND timestamp <= ?", (start_date, end_date))
+        data["summary"]["total_keystrokes"] = cursor.fetchone()[0] or 0
+        
+        # 2. Sessions
+        cursor.execute("SELECT start_time, end_time, machine_name FROM sessions WHERE start_time >= ? AND start_time <= ?", (start_date, end_date))
+        data["sessions"] = [{"start": r[0], "end": r[1], "machine": r[2]} for r in cursor.fetchall()]
+        
+        # 3. App Breakdown
+        cursor.execute("SELECT app_name, COALESCE(SUM(duration_sec), 0) FROM app_events WHERE start_time >= ? AND start_time <= ? GROUP BY app_name ORDER BY SUM(duration_sec) DESC", (start_date, end_date))
+        data["app_breakdown"] = [{"app": r[0], "duration_min": (r[1] or 0)/60} for r in cursor.fetchall()]
+        
+        # 3b. Daily Summaries (Top Apps by Day)
+        cursor.execute('''
+            SELECT date(start_time) as d, app_name, COALESCE(SUM(duration_sec), 0) as total_dur 
+            FROM app_events WHERE start_time >= ? AND start_time <= ?
+            GROUP BY d, app_name ORDER BY d DESC, total_dur DESC
+        ''', (start_date, end_date))
+        data["daily_apps"] = [{"date": r[0], "app": r[1], "duration_min": (r[2] or 0)/60} for r in cursor.fetchall()]
+        
+        # 4. Browser Details (including fallback)
+        cursor.execute("SELECT domain, url, SUM(duration_sec) FROM browser_events WHERE start_time >= ? AND start_time <= ? GROUP BY url ORDER BY SUM(duration_sec) DESC", (start_date, end_date))
+        browser_data = cursor.fetchall()
+        if not browser_data:
+             cursor.execute("SELECT window_title, SUM(duration_sec) FROM app_events WHERE (app_name LIKE '%comet%' OR app_name LIKE '%chrome%' OR app_name LIKE '%firefox%') AND start_time >= ? AND start_time <= ? GROUP BY window_title ORDER BY SUM(duration_sec) DESC", (start_date, end_date))
+             data["browser_details"] = [{"type": "fallback", "title": r[0], "duration_min": r[1]/60} for r in cursor.fetchall()]
+        else:
+             data["browser_details"] = [{"type": "direct", "domain": r[0], "url": r[1], "duration_min": r[2]/60} for r in browser_data]
+             
+        # 5. Search Queries
+        cursor.execute("SELECT page_title, start_time FROM browser_events WHERE start_time >= ? AND start_time <= ? AND page_title LIKE '[Search:%'", (start_date, end_date))
+        data["search_queries"] = [{"query": r[0], "time": r[1]} for r in cursor.fetchall()]
+        
+        # 6. Idle Analysis
+        cursor.execute("SELECT SUM(duration_sec), AVG(duration_sec) FROM idle_periods WHERE start_time >= ? AND start_time <= ?", (start_date, end_date))
+        r = cursor.fetchone()
+        data["idle_analysis"] = {"total_idle_min": (r[0] or 0)/60, "avg_idle_sec": r[1] or 0}
+        
+        # 6b. Activity Timeline
+        cursor.execute('''
+            SELECT start_time, 'App' as type, app_name as source, window_title as detail 
+            FROM app_events WHERE start_time >= ? AND start_time <= ?
+            UNION ALL
+            SELECT start_time, 'Web' as type, domain as source, page_title as detail 
+            FROM browser_events WHERE start_time >= ? AND start_time <= ?
+            ORDER BY start_time DESC LIMIT 50
+        ''', (start_date, end_date, start_date, end_date))
+        data["activity_timeline"] = [{"time": r[0], "type": r[1], "source": r[2], "detail": r[3]} for r in cursor.fetchall()]
+        
+        # 6c. Transitions
+        cursor.execute('''
+            SELECT source FROM (
+                SELECT start_time, app_name as source FROM app_events WHERE start_time >= ? AND start_time <= ?
+                UNION ALL
+                SELECT start_time, domain as source FROM browser_events WHERE start_time >= ? AND start_time <= ?
+            ) ORDER BY start_time ASC
+        ''', (start_date, end_date, start_date, end_date))
+        sequence = [r[0] for r in cursor.fetchall()]
+        transitions = {}
+        for i in range(len(sequence) - 1):
+            pair = f"{sequence[i]} -> {sequence[i+1]}"
+            if sequence[i] != sequence[i+1]:
+                transitions[pair] = transitions.get(pair, 0) + 1
+        data["transitions"] = [{"path": k, "count": v} for k, v in sorted(transitions.items(), key=lambda x: x[1], reverse=True)[:10]]
+        
+        # 7. Mouse and Hotkeys
+        cursor.execute("SELECT event_type, COUNT(*) FROM mouse_events WHERE timestamp >= ? AND timestamp <= ? GROUP BY event_type", (start_date, end_date))
+        data["mouse_stats"] = [{"event": r[0], "count": r[1]} for r in cursor.fetchall()]
+        cursor.execute("SELECT hotkey_combo, COUNT(*) FROM keystrokes WHERE timestamp >= ? AND timestamp <= ? AND is_hotkey = 1 GROUP BY hotkey_combo", (start_date, end_date))
+        data["hotkey_stats"] = [{"hotkey": r[0], "count": r[1]} for r in cursor.fetchall()]
+        
+        conn.close()
+        
+        filename = f'report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        file_path = os.path.join(REPORTS_DIR, filename)
+        os.makedirs(REPORTS_DIR, exist_ok=True)
+        with open(file_path, 'w') as f:
+            json.dump(data, f, indent=4)
+        print(f"JSON Report exported: {file_path}")
+        return file_path
+
 if __name__ == "__main__":
     report = ReportGenerator()
-    report.create_report(days=30)
+    import sys
+    if '--json' in sys.argv:
+        report.export_json(days=30)
+    else:
+        report.create_report(days=30)

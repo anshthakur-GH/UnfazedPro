@@ -10,8 +10,14 @@ from src.input_tracker import InputTracker
 from src.window_monitor import WindowMonitor
 from src.aw_sync import AW_Sync
 
-# Fix import if I have a typo in thought
 import sqlite3
+try:
+    import win32api
+    import win32con
+except ImportError:
+    win32api = None
+
+from src.report_generator import ReportGenerator
 
 def create_session():
     conn = sqlite3.connect(DB_PATH)
@@ -98,16 +104,35 @@ def main():
     idle_thread = threading.Thread(target=idle_monitor, daemon=True)
     idle_thread.start()
     
-    def signal_handler(sig, frame):
-        print("\nShutting down monitors...")
+    def cleanup_and_report():
+        print("\nShutting down monitors and generating session report...")
         tracker.stop()
         monitor.stop()
         aw_sync.stop()
         end_session(session_id)
+        
+        try:
+            print("Generating final report...")
+            report = ReportGenerator()
+            report.create_report(days=1)
+            report.export_json(days=1)
+        except Exception as e:
+            print(f"Error generating final report: {e}")
+
+    def signal_handler(sig, frame):
+        cleanup_and_report()
         sys.exit(0)
         
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
+    
+    if win32api:
+        def console_ctrl_handler(ctrl_type):
+            if ctrl_type in (win32con.CTRL_SHUTDOWN_EVENT, win32con.CTRL_LOGOFF_EVENT, win32con.CTRL_CLOSE_EVENT):
+                cleanup_and_report()
+                return True
+            return False
+        win32api.SetConsoleCtrlHandler(console_ctrl_handler, True)
     
     print("System active. Press Ctrl+C to stop.")
     
@@ -115,7 +140,7 @@ def main():
         while True:
             time.sleep(10)
     except KeyboardInterrupt:
-        signal_handler(None, None)
+        cleanup_and_report()
 
 if __name__ == "__main__":
     main()
