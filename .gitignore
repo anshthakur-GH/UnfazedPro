@@ -15,3 +15,7 @@ reports/*.json
 # IDEs
 .vscode/
 .idea/
+# Node
+node_modules/
+dist/
+.eslintcache
