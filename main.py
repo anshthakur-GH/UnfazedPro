@@ -44,7 +44,7 @@ def end_session(session_id):
     conn.close()
 
 def main():
-    print("--- LOCAL ACTIVITY MONITORING SYSTEM ---")
+    print("--- UNFAZEDPRO SYSTEM MONITOR ---")
     
     # Initialize DB
     if not os.path.exists(DB_PATH):

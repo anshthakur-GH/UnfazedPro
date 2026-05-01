@@ -10,7 +10,7 @@ REPORTS_DIR = os.path.join(os.path.dirname(__file__), '..', 'reports')
 class ReportGenerator(FPDF):
     def header(self):
         self.set_font('Arial', 'B', 15)
-        self.cell(0, 10, 'Local Activity Monitoring Report', 0, 1, 'C')
+        self.cell(0, 10, 'UnfazedPro Activity Report', 0, 1, 'C')
         self.set_font('Arial', '', 10)
         self.cell(0, 10, f'Generated on: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'C')
         self.ln(10)
