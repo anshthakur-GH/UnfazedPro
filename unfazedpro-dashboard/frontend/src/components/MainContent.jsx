@@ -153,8 +153,8 @@ const MainContent = () => {
                     data={appData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={74}
+                    outerRadius={88}
                     stroke="none"
                     paddingAngle={2}
                     dataKey="value"
