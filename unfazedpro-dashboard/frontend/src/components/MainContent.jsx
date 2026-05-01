@@ -9,39 +9,19 @@ const formatCurrency = (value) => {
   return '$' + value.toLocaleString();
 };
 
-const KPICard = ({ title, value, prefix = '', suffix = '', trend, trendLabel, type = 'number', progress = 0 }) => {
+const KPICard = ({ title, value, prefix = '', suffix = '', trend, trendLabel }) => {
   const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
   const animatedValue = useCountUp(numValue, 1500);
   
   return (
     <div className="card-premium p-6 flex flex-col justify-between relative overflow-hidden group h-[160px]">
-      <div className="flex justify-between items-center z-10">
+      <div className="flex justify-between items-start z-10">
         <span className="kpi-label whitespace-nowrap">{title}</span>
-        {type === 'progress' && (
-          <div className="w-14 h-14 relative shrink-0">
-            <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
-              <circle cx="50" cy="50" r="45" fill="transparent" stroke="var(--color-border-card)" strokeWidth="10" />
-              <circle 
-                cx="50" cy="50" r="45" 
-                fill="transparent" 
-                stroke="var(--color-accent-primary)" 
-                strokeWidth="10" 
-                strokeDasharray="282.7" 
-                strokeDashoffset={282.7 - (282.7 * animatedValue) / 100}
-                className="transition-all duration-1000 ease-out"
-                strokeLinecap="round"
-              />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold">
-              {animatedValue}%
-            </div>
-          </div>
-        )}
       </div>
       
       <div className="z-10 relative">
         <div className="kpi-value text-4xl">
-          {prefix}{type === 'number' ? animatedValue.toLocaleString() : value}{suffix}
+          {prefix}{typeof value === 'number' ? animatedValue.toLocaleString() : value}{suffix}
         </div>
         
         {trend !== undefined && (
@@ -130,8 +110,8 @@ const MainContent = () => {
       {/* KPI Cards Row */}
       <div className={`grid grid-cols-4 gap-5 mb-6 transition-all duration-500 delay-100 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         <KPICard title="EMPLOYEES MONITORED" value={data.active_employees} trend={1} trendLabel="↑ 3 since last month" />
-        <KPICard title="AVG ACTIVE HOURS / DAY" value={`${data.avg_active_hours}h`} type="text" trend={1} trendLabel="↑ 8% vs last month" />
-        <KPICard title="AVG DISTRACTION RATE" value={data.avg_distraction_pct} type="progress" />
+        <KPICard title="AVG ACTIVE HOURS / DAY" value={`${data.avg_active_hours}h`} trend={1} trendLabel="↑ 8% vs last month" />
+        <KPICard title="AVG DISTRACTION RATE" value={data.avg_distraction_pct} />
         <KPICard title="AUTOMATION PROPOSALS" value={data.proposals_generated} trend={1} trendLabel="↑ 2 this quarter" />
       </div>
 
