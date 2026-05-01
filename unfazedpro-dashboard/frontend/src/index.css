@@ -13,6 +13,7 @@
     --color-border-subtle: rgba(0, 0, 0, 0.05);
     --color-border-card: rgba(0, 0, 0, 0.08);
     --color-danger: #EF4444;
+    --color-danger-dark: #991B1B;
     --color-warning: #F59E0B;
     --color-accent-primary: #FF7300;
     --color-accent-secondary: #FFAA00;
@@ -30,6 +31,7 @@
     --color-border-subtle: rgba(255, 255, 255, 0.06);
     --color-border-card: rgba(255, 255, 255, 0.09);
     --color-danger: #FF4D4D;
+    --color-danger-dark: #B91C1C;
     --color-warning: #FFB700;
     --color-accent-primary: #FF7300;
     --color-accent-secondary: #FFAA00;

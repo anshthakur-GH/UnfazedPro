@@ -111,7 +111,7 @@ const MainContent = () => {
       <div className={`grid grid-cols-4 gap-5 mb-6 transition-all duration-500 delay-100 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         <KPICard title="EMPLOYEES MONITORED" value={data.active_employees} trend={1} trendLabel="↑ 3 since last month" />
         <KPICard title="AVG ACTIVE HOURS / DAY" value={`${data.avg_active_hours}h`} trend={1} trendLabel="↑ 8% vs last month" />
-        <KPICard title="AVG DISTRACTION RATE" value={data.avg_distraction_pct} suffix="%" trend={-1} trendLabel="↓ 2.4% vs last week" valueColor="text-danger" />
+        <KPICard title="AVG DISTRACTION RATE" value={data.avg_distraction_pct} suffix="%" trend={-1} trendLabel="↓ 2.4% vs last week" valueColor="text-danger-dark" />
         <KPICard title="AUTOMATION PROPOSALS" value={data.proposals_generated} trend={1} trendLabel="↑ 2 this quarter" />
       </div>
 
