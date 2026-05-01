@@ -30,7 +30,7 @@ const Sidebar = () => {
       padding: '24px 16px'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-        <div style={{ width: '32px', height: '32px', background: 'var(--accent-green)', borderRadius: '6px' }}></div>
+        <img src="/logo.svg" style={{ width: '32px', height: '32px' }} alt="Unfazed Logo" />
         <span style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.5px' }}>UnfazedPro</span>
       </div>
 

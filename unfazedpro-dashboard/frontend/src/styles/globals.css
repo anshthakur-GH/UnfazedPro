@@ -7,9 +7,9 @@
   --bg-sidebar:       #141414;
   --bg-right-panel:   #141414;
 
-  --accent-green:     #a8ff3e;
-  --accent-green-dim: #6fcf2a;
-  --accent-green-glow:rgba(168, 255, 62, 0.1);
+  --accent-green:     #ff6b00;   /* Primary Orange */
+  --accent-green-dim: #cc5500;   /* Dim Orange */
+  --accent-green-glow:rgba(255, 107, 0, 0.15);
 
   --text-primary:     #ffffff;
   --text-secondary:   #a0a0a0;
