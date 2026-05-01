@@ -1,36 +1,53 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { TrendingUp, TrendingDown, MoreVertical, RefreshCw, Moon, Bell, Globe, ChevronDown, Zap, Settings } from 'lucide-react'
+import { TrendingUp, TrendingDown, MoreVertical, RefreshCw, Moon, Bell, Globe, ChevronDown, Zap, Settings, Users, Clock, Activity, Lightbulb, IndianRupee } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, Tooltip } from 'recharts'
 
-const MetricCard = ({ label, value, delta, deltaUp, gauge }) => (
-  <div className="premium-card" style={{ padding: '24px', flex: 1 }}>
-    <div className="section-label" style={{ marginBottom: '12px' }}>{label}</div>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <div className="metric-kpi">{value}</div>
-      {gauge && (
-        <div style={{ width: '44px', height: '44px' }}>
-          <svg viewBox="0 0 36 36">
-            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
-            <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-primary)" strokeWidth="3" strokeDasharray={`${gauge}, 100`} strokeLinecap="round" style={{ filter: 'drop-shadow(0 0 4px var(--accent-primary))' }} />
-          </svg>
+const MetricCard = ({ label, value, delta, deltaUp, icon: Icon, gauge }) => (
+  <div className="premium-card" style={{ padding: '24px', flex: 1, display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+    {Icon && (
+      <div style={{ 
+        width: '48px', 
+        height: '48px', 
+        borderRadius: '50%', 
+        background: 'var(--bg-base)', 
+        border: '1px solid var(--border-subtle)', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        flexShrink: 0
+      }}>
+        <Icon size={20} color="var(--accent-primary)" />
+      </div>
+    )}
+    <div style={{ flex: 1 }}>
+      <div className="section-label" style={{ marginBottom: '8px', fontSize: '11px' }}>{label}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+        <div className="metric-kpi" style={{ display: 'flex', alignItems: 'baseline' }}>
+          {value}
+        </div>
+        {gauge && (
+          <div style={{ width: '36px', height: '36px' }}>
+            <svg viewBox="0 0 36 36">
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="3" />
+              <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--accent-primary)" strokeWidth="3" strokeDasharray={`${gauge}, 100`} strokeLinecap="round" />
+            </svg>
+          </div>
+        )}
+      </div>
+      {delta && (
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '4px', 
+          color: deltaUp ? '#a8ff3e' : '#ff4444',
+          fontSize: '11px',
+          fontWeight: '600'
+        }}>
+          {deltaUp ? <TrendingUp size={12}/> : <TrendingDown size={12}/>}
+          {delta}
         </div>
       )}
-    </div>
-    <div style={{ 
-      marginTop: '16px', 
-      display: 'inline-flex', 
-      alignItems: 'center', 
-      gap: '6px', 
-      padding: '4px 8px', 
-      background: 'rgba(0,0,0,0.3)', 
-      borderRadius: '6px',
-      fontSize: '11px',
-      fontWeight: '600',
-      color: deltaUp ? '#a8ff3e' : '#ff4444' 
-    }}>
-      {deltaUp ? <TrendingUp size={12}/> : <TrendingDown size={12}/>}
-      {delta}
     </div>
   </div>
 )
@@ -89,11 +106,11 @@ const Overview = () => {
 
       {/* KPI Section */}
       <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
-        <MetricCard label="Employees Monitored" value={data.active_employees} delta="↑ 3 since last month" deltaUp />
-        <MetricCard label="Avg Active Hours / Day" value={`${data.avg_active_hours}h`} delta="↑ 8% vs last month" deltaUp />
-        <MetricCard label="Avg Distraction Rate" value={`${data.avg_distraction_pct}%`} gauge={data.avg_distraction_pct} delta="↓ 2.4% vs last week" deltaUp={false} />
-        <MetricCard label="Automation Proposals" value={data.proposals_generated} delta="↑ 2 this quarter" deltaUp />
-        <MetricCard label="ROI Expected" value="44%" delta="↑ 12% projected" deltaUp />
+        <MetricCard icon={Users} label="PHASE 2 ACTIVE" value={data.active_employees} delta="↑ 1 this week" deltaUp />
+        <MetricCard icon={Clock} label="Avg Active Hours / Day" value={`${data.avg_active_hours}h`} delta="↑ 8% vs last month" deltaUp />
+        <MetricCard icon={Activity} label="Avg Distraction Rate" value={`${data.avg_distraction_pct}%`} gauge={data.avg_distraction_pct} delta="↓ 2.4% vs last week" deltaUp={false} />
+        <MetricCard icon={Lightbulb} label="Automation Proposals" value={data.proposals_generated} delta="↑ 2 this quarter" deltaUp />
+        <MetricCard icon={IndianRupee} label="AVG ROI" value={<><span style={{ fontFamily: 'sans-serif', marginRight: '2px' }}>₹</span>14.2k</>} delta="↑ 12% projected" deltaUp />
       </div>
 
       {/* Analytics Grid */}

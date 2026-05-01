@@ -101,7 +101,7 @@ const SidebarPremium = () => {
       {/* Brand Logo Bottom */}
       <div className={`px-5 mt-auto transition-all duration-500 delay-500 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         <div className="flex items-center gap-2 text-text-muted hover:text-text-primary cursor-pointer transition-colors">
-          <Hexagon className="w-5 h-5 text-accent-primary" />
+          <img src="/Logo.png" alt="UnfazedPro Logo" className="w-5 h-5 object-contain" />
           <span className="font-semibold text-sm tracking-wide">UnfazedPro</span>
         </div>
       </div>
