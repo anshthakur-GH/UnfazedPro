@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Intelligence Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;600;800&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #020408;
+            --bg-surface: #080f1a;
+            --border: #0d2135;
+            --accent-cyan: #00d4ff;
+            --accent-green: #00ff88;
+            --accent-red: #ff4444;
+            --accent-amber: #ffaa00;
+            --text-primary: #e8f4f8;
+            --text-secondary: #4a7a99;
+            --text-tertiary: #1e4060;
+            --glow: 0 0 20px rgba(0, 212, 255, 0.15);
+            --glow-inset: inset 0 0 20px rgba(0, 212, 255, 0.03);
+            --sidebar-width: 220px;
+            --topbar-height: 56px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Scanline Overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.03) 0px,
+                rgba(0,0,0,0.03) 1px,
+                transparent 1px,
+                transparent 3px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* Background Grid Animation */
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(0,212,255,0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(0,255,136,0.02) 0%, transparent 50%),
+                repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(13,33,53,0.1) 40px, rgba(13,33,53,0.1) 41px),
+                repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(13,33,53,0.1) 40px, rgba(13,33,53,0.1) 41px);
+            z-index: -1;
+            animation: gridDrift 60s linear infinite;
+        }
+
+        @keyframes gridDrift {
+            from { background-position: 0 0; }
+            to { background-position: 40px 40px; }
+        }
+
+        /* Layout */
+        .top-bar {
+            height: var(--topbar-height);
+            width: 100%;
+            background: var(--bg-deep);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--topbar-height));
+            background: var(--bg-deep);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: var(--topbar-height);
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 0;
+            z-index: 90;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--topbar-height);
+            height: calc(100vh - var(--topbar-height));
+            overflow-y: overlay;
+            padding: 32px;
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        .main-content::-webkit-scrollbar { width: 6px; }
+        .main-content::-webkit-scrollbar-track { background: var(--bg-deep); }
+        .main-content::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        .main-content::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+
+        /* Typography */
+        .orbitron { font-family: 'Orbitron', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .rajdhani { font-family: 'Rajdhani', sans-serif; }
+
+        /* Components */
+        .logo-container { display: flex; align-items: center; gap: 12px; }
+        .logo-hex {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--accent-cyan), #0066aa);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+        .logo-text h1 { font-size: 18px; color: var(--accent-cyan); letter-spacing: 1px; }
+        .logo-text p { font-size: 10px; color: var(--text-secondary); letter-spacing: 0.2em; text-transform: uppercase; margin-top: -2px; }
+
+        .employee-selector {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            padding: 6px 16px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .employee-selector:hover { border-color: var(--accent-cyan); }
+        .employee-info { color: var(--text-primary); font-size: 13px; }
+
+        .live-status { display: flex; align-items: center; gap: 8px; color: var(--accent-green); font-size: 12px; font-weight: 600; letter-spacing: 1px; }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .btn-generate {
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: transparent;
+            padding: 8px 20px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-generate:hover {
+            background: rgba(0, 212, 255, 0.1);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Sidebar Status */
+        .status-panel { padding: 0 24px; margin-bottom: 32px; }
+        .status-header { font-size: 11px; color: var(--text-secondary); border-bottom: 1px solid var(--border); padding-bottom: 4px; margin-bottom: 8px; letter-spacing: 2px; }
+        .status-row { font-size: 11px; font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .dot-active { background: var(--accent-green); }
+        .dot-standby { background: var(--accent-amber); }
+        .status-label { color: var(--text-secondary); width: 80px; }
+        .status-value { color: var(--text-primary); }
+
+        .nav-links { list-style: none; }
+        .nav-link {
+            padding: 12px 24px;
+            font-size: 13px;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+        .nav-link.active {
+            color: var(--accent-cyan);
+            background: rgba(0, 212, 255, 0.05);
+            border-left-color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .sidebar-footer { margin-top: auto; padding: 24px; }
+        .countdown-label { font-size: 10px; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 4px; }
+        .countdown-timer { font-size: 20px; color: var(--accent-cyan); font-weight: 600; }
+
+        /* KPI Strip */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        .kpi-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-top: 2px solid var(--accent-cyan);
+            padding: 20px 24px;
+            border-radius: 4px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInStaggered 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.15);
+            border-color: var(--accent-cyan);
+        }
+        .kpi-label { font-size: 11px; color: var(--text-secondary); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .kpi-value { font-size: 32px; color: var(--text-primary); margin-bottom: 4px; }
+        .kpi-sub { font-size: 11px; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; display: flex; align-items: center; gap: 4px; }
+        .kpi-icon { position: absolute; right: 24px; top: 20px; opacity: 0.2; color: var(--accent-cyan); }
+
+        /* Grid Sections */
+        .section-row { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+        .row-60-40 { grid-template-columns: 6.5fr 3.5fr; }
+        
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+            animation: fadeInStaggered 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+        .card-title { font-size: 11px; color: var(--text-secondary); letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; }
+
+        /* Bar Chart */
+        .bar-chart { display: flex; flex-direction: column; gap: 16px; }
+        .bar-row { display: grid; grid-template-columns: 140px 1fr 80px 100px; align-items: center; gap: 16px; }
+        .bar-name { font-size: 12px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; }
+        .bar-track { height: 8px; background: var(--border); border-radius: 4px; position: relative; }
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), #0066aa);
+            border-radius: 4px;
+            width: 0;
+            transition: width 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.4);
+        }
+        .bar-val { font-size: 12px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; text-align: right; }
+        .badge {
+            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+            text-align: center;
+            width: fit-content;
+        }
+        .badge-browser { background: var(--accent-cyan); color: var(--bg-deep); }
+        .badge-monitor { background: var(--accent-green); color: var(--bg-deep); }
+        .badge-messaging { background: var(--accent-amber); color: var(--bg-deep); }
+        .badge-system { background: #334455; color: var(--text-primary); }
+
+        /* Donut Chart */
+        .donut-container { display: flex; flex-direction: column; align-items: center; gap: 24px; position: relative; }
+        .donut-svg { transform: rotate(-90deg); }
+        .donut-circle-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+        .donut-circle-active { fill: none; stroke: var(--accent-green); stroke-width: 10; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 1.5s ease-out; }
+        .donut-circle-monitor { fill: none; stroke: var(--accent-cyan); stroke-width: 10; stroke-dasharray: 283; stroke-dashoffset: 283; transition: stroke-dashoffset 1.5s ease-out; }
+        .donut-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .donut-val { font-size: 36px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+        .donut-unit { font-size: 12px; color: var(--text-secondary); letter-spacing: 2px; }
+        .donut-total { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+
+        .legend { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+        .legend-row { display: flex; justify-content: space-between; font-size: 11px; font-family: 'JetBrains Mono', monospace; }
+        .legend-label { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+        .legend-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+        /* Timeline */
+        .timeline-scroll { max-height: 400px; overflow-y: auto; border-left: 1px solid var(--border); padding-left: 20px; }
+        .timeline-scroll::-webkit-scrollbar { width: 4px; }
+        .timeline-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+        .timeline-item { position: relative; padding: 12px 0; border-bottom: 1px solid rgba(13, 33, 53, 0.5); }
+        .timeline-item::before { content: ''; position: absolute; left: -24px; top: 18px; width: 8px; height: 8px; background: var(--bg-deep); border: 2px solid var(--accent-cyan); border-radius: 50%; z-index: 2; }
+        .timeline-row { display: flex; align-items: center; gap: 16px; }
+        .timeline-time { font-size: 11px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; min-width: 60px; }
+        .timeline-sep { color: var(--border); }
+        .timeline-app { font-size: 12px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; min-width: 120px; }
+        .timeline-title { font-size: 11px; color: var(--text-primary); font-family: 'JetBrains Mono', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
+        .badge-distraction { background: var(--accent-red); color: white; font-size: 9px; padding: 1px 6px; border-radius: 2px; margin-left: auto; }
+
+        /* Session Log */
+        .log-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .log-table th { text-align: left; color: var(--text-secondary); padding: 8px 4px; border-bottom: 1px solid var(--border); letter-spacing: 1px; }
+        .log-table td { padding: 10px 4px; color: var(--text-primary); border-bottom: 1px solid rgba(13, 33, 53, 0.3); }
+        .log-status { display: flex; align-items: center; gap: 6px; }
+        .log-active { color: var(--accent-green); }
+
+        /* Web Intelligence */
+        .web-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+        .url-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .url-table th { text-align: left; color: var(--text-secondary); padding: 8px; border-bottom: 1px solid var(--border); }
+        .url-table td { padding: 10px 8px; border-bottom: 1px solid rgba(13,33,53,0.3); }
+        .risk-badge { padding: 2px 6px; border-radius: 2px; font-weight: 700; font-size: 9px; }
+        .risk-high { background: rgba(255, 68, 68, 0.2); color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .risk-med { background: rgba(255, 170, 0, 0.2); color: var(--accent-amber); border: 1px solid var(--accent-amber); }
+        .risk-low { background: rgba(0, 255, 136, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+
+        .distraction-gauge-box { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .gauge-svg { transform: rotate(-225deg); }
+        .gauge-bg { fill: none; stroke: var(--border); stroke-width: 12; stroke-linecap: round; }
+        .gauge-fill { fill: none; stroke: var(--accent-red); stroke-width: 12; stroke-linecap: round; stroke-dasharray: 212; stroke-dashoffset: 212; transition: stroke-dashoffset 1.5s ease-out; }
+        .gauge-val { font-size: 32px; font-weight: 800; color: var(--accent-red); }
+        .gauge-label { font-size: 11px; color: var(--text-secondary); letter-spacing: 2px; }
+
+        /* Workflow Map */
+        .flow-container { height: 200px; position: relative; margin-bottom: 24px; display: flex; justify-content: space-around; align-items: center; }
+        .node {
+            width: 80px; height: 80px; border-radius: 50%; border: 1px solid var(--border);
+            background: var(--bg-deep); display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; font-size: 10px; font-family: 'JetBrains Mono', monospace; color: var(--text-primary);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5); z-index: 5;
+        }
+        .node-monitor { border-color: var(--accent-green); box-shadow: 0 0 10px rgba(0, 255, 136, 0.2); }
+        .node-browser { border-color: var(--accent-cyan); box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
+        .node-system { border-color: #556677; }
+        
+        .flow-svg { position: absolute; inset: 0; pointer-events: none; }
+        .flow-line { fill: none; stroke: var(--border); stroke-width: 1.5; stroke-dasharray: 4 4; animation: flowDash 20s linear infinite; }
+        @keyframes flowDash { to { stroke-dashoffset: -100; } }
+
+        /* Boot Sequence */
+        #boot-screen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-deep);
+            z-index: 10000;
+            display: none; /* Temporarily disabled for development */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            padding: 40px;
+        }
+        .boot-log { width: 400px; font-size: 12px; }
+        .boot-line { margin-bottom: 8px; opacity: 0; }
+        .boot-progress { width: 100%; height: 2px; background: var(--border); margin: 20px 0; position: relative; }
+        .boot-bar { position: absolute; left: 0; top: 0; height: 100%; background: var(--accent-cyan); width: 0; }
+
+        @keyframes fadeInStaggered {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Distraction index specific */
+        .distraction-card { border-color: rgba(255, 68, 68, 0.3); }
+        .distraction-card .card-title { color: var(--accent-red); }
+        .status-badge-elevated { color: var(--accent-red); font-weight: 700; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        /* Report Processing Overlay */
+        #processing-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 4, 8, 0.9);
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+
+    <!-- Boot Sequence -->
+    <div id="boot-screen">
+        <div class="boot-log">
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 0.1s">ANTIGRAVITY INTELLIGENCE PLATFORM v1.0</div>
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 0.2s">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</div>
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 0.4s">■ LOADING MONITORING DATA...      [OK]</div>
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 0.6s">■ PARSING SESSION LOGS...         [OK]</div>
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 0.8s">■ BUILDING ACTIVITY GRAPH...      [OK]</div>
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 1.0s">■ CALCULATING DISTRACTION INDEX...[OK]</div>
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 1.2s">■ RENDERING DASHBOARD...          [OK]</div>
+            <div class="boot-progress"><div class="boot-bar" style="animation: bootProgress 1.4s linear forwards"></div></div>
+            <div class="boot-line" style="animation: bootFade 0.1s forwards 1.5s">SYSTEM READY</div>
+        </div>
+    </div>
+    <style>
+        @keyframes bootFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes bootProgress { from { width: 0; } to { width: 100%; } }
+    </style>
+
+    <!-- Processing Overlay -->
+    <div id="processing-overlay">
+        <div class="logo-hex" style="width: 64px; height: 64px; margin-bottom: 24px; animation: rotateHex 2s infinite linear"></div>
+        <div class="orbitron" style="font-size: 18px; color: var(--accent-cyan); letter-spacing: 4px">AGENT PROCESSING...</div>
+        <div class="boot-progress" style="width: 300px; margin-top: 24px"><div class="boot-bar" id="proc-bar"></div></div>
+    </div>
+    <style>
+        @keyframes rotateHex { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+
+    <!-- Top Bar -->
+    <header class="top-bar">
+        <div class="logo-container">
+            <div class="logo-hex"></div>
+            <div class="logo-text">
+                <h1 class="orbitron">ANTIGRAVITY</h1>
+                <p class="rajdhani">INTELLIGENCE PLATFORM</p>
+            </div>
+        </div>
+
+        <div class="employee-selector">
+            <div class="mono" style="font-size: 10px; color: var(--text-secondary)">TARGET_ID:</div>
+            <div class="employee-info mono">AnshThakur · AnshPC</div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 32px">
+            <div class="live-status rajdhani">
+                <div class="pulse-dot"></div>
+                LIVE MONITORING
+            </div>
+            <div class="mono" style="font-size: 11px; color: var(--text-secondary)">
+                APR 01 — MAY 01 2026
+            </div>
+            <button class="btn-generate rajdhani" onclick="triggerReport()">GENERATE REPORT</button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="status-panel">
+            <div class="status-header rajdhani">SYSTEM STATUS</div>
+            <div class="status-row">
+                <div class="status-dot dot-active"></div>
+                <div class="status-label">MONITOR</div>
+                <div class="status-value">ACTIVE</div>
+            </div>
+            <div class="status-row">
+                <div class="status-dot dot-standby"></div>
+                <div class="status-label">AGENT 1</div>
+                <div class="status-value">STANDBY</div>
+            </div>
+            <div class="status-row" style="margin-top: 12px">
+                <div class="status-label">UPTIME</div>
+                <div class="status-value">117.76 hrs</div>
+            </div>
+            <div class="status-row">
+                <div class="status-label">MACHINE</div>
+                <div class="status-value">AnshPC</div>
+            </div>
+        </div>
+
+        <nav class="nav-links rajdhani">
+            <li class="nav-link active"><span>▸</span> OVERVIEW</li>
+            <li class="nav-link"><span>▸</span> APPLICATIONS</li>
+            <li class="nav-link"><span>▸</span> WEB ACTIVITY</li>
+            <li class="nav-link"><span>▸</span> INPUT ANALYSIS</li>
+            <li class="nav-link"><span>▸</span> WORKFLOWS</li>
+            <li class="nav-link"><span>▸</span> DISTRACTION</li>
+            <li class="nav-link"><span>▸</span> SESSIONS</li>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="countdown-label rajdhani">NEXT REPORT IN</div>
+            <div class="countdown-timer orbitron" id="countdown">23:14:07</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="dashboard">
+        
+        <!-- SECTION 1: KPI STRIP -->
+        <div class="kpi-grid">
+            <div class="kpi-card" style="animation-delay: 1.6s">
+                <span class="kpi-label">TIME MONITORED</span>
+                <div class="kpi-value orbitron"><span class="counter" data-target="7.8">0</span>m</div>
+                <div class="kpi-sub"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> This session</div>
+                <svg class="kpi-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <div class="kpi-card" style="animation-delay: 1.7s">
+                <span class="kpi-label">KEYSTROKES</span>
+                <div class="kpi-value orbitron"><span class="counter" data-target="187">0</span></div>
+                <div class="kpi-sub" style="color: var(--accent-green)">+74.8% vs prev</div>
+                <svg class="kpi-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M6 16h.01M10 16h10"/></svg>
+            </div>
+            <div class="kpi-card" style="animation-delay: 1.8s">
+                <span class="kpi-label">APPS DETECTED</span>
+                <div class="kpi-value orbitron"><span class="counter" data-target="8">0</span></div>
+                <div class="kpi-sub">Top: comet.exe</div>
+                <svg class="kpi-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            </div>
+            <div class="kpi-card" style="animation-delay: 1.9s">
+                <span class="kpi-label">MOUSE EVENTS</span>
+                <div class="kpi-value orbitron"><span class="counter" data-target="312">0</span></div>
+                <div class="kpi-sub">144 clicks · 164 scrolls</div>
+                <svg class="kpi-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-green)"><path d="M12 2v20M5 7h14M5 12h14M5 17h14"/></svg>
+            </div>
+            <div class="kpi-card" style="animation-delay: 2.0s">
+                <span class="kpi-label">SYSTEM UPTIME</span>
+                <div class="kpi-value orbitron"><span class="counter" data-target="117.76">0</span>h</div>
+                <div class="kpi-sub">Machine: AnshPC</div>
+                <svg class="kpi-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-amber)"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            </div>
+        </div>
+
+        <!-- SECTION 2: APP USAGE + DONUT -->
+        <div class="section-row row-60-40">
+            <div class="card" style="animation-delay: 2.1s">
+                <div class="card-header">
+                    <div class="card-title">APPLICATION INTELLIGENCE</div>
+                    <div class="mono" style="font-size: 10px; color: var(--text-tertiary)">REAL-TIME TRACKING</div>
+                </div>
+                <div class="bar-chart" id="app-chart">
+                    <!-- JS Generated -->
+                </div>
+            </div>
+            <div class="card" style="animation-delay: 2.2s">
+                <div class="card-header">
+                    <div class="card-title">SESSION ACTIVITY</div>
+                </div>
+                <div class="donut-container">
+                    <svg class="donut-svg" width="120" height="120">
+                        <circle class="donut-circle-bg" cx="60" cy="60" r="45"></circle>
+                        <circle class="donut-circle-active" id="donut-active" cx="60" cy="60" r="45"></circle>
+                        <circle class="donut-circle-monitor" id="donut-monitor" cx="60" cy="60" r="45"></circle>
+                    </svg>
+                    <div class="donut-content">
+                        <div class="donut-val orbitron">7.8</div>
+                        <div class="donut-unit rajdhani">MIN</div>
+                        <div class="donut-total mono">TOTAL</div>
+                    </div>
+                    <div class="legend">
+                        <div class="legend-row">
+                            <div class="legend-label"><div class="legend-dot" style="background: var(--accent-green)"></div> ACTIVE</div>
+                            <div class="mono">7.8 min <span style="color: var(--text-tertiary)">100%</span></div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-label"><div class="legend-dot" style="background: var(--text-tertiary)"></div> IDLE</div>
+                            <div class="mono">0.0 min <span style="color: var(--text-tertiary)">0%</span></div>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-label"><div class="legend-dot" style="background: var(--accent-cyan)"></div> MONITORING</div>
+                            <div class="mono">1.5 min <span style="color: var(--text-tertiary)">19%</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: TIMELINE + LOG -->
+        <div class="section-row row-60-40">
+            <div class="card" style="animation-delay: 2.3s">
+                <div class="card-header">
+                    <div class="card-title">CHRONOLOGICAL ACTIVITY STREAM</div>
+                </div>
+                <div class="timeline-scroll" id="timeline-container">
+                    <!-- JS Generated -->
+                </div>
+            </div>
+            <div class="card" style="animation-delay: 2.4s">
+                <div class="card-header">
+                    <div class="card-title">SESSION LOG</div>
+                </div>
+                <table class="log-table" id="log-container">
+                    <thead>
+                        <tr><th>SESSION</th><th>STATUS</th><th>MACHINE</th></tr>
+                    </thead>
+                    <tbody>
+                        <!-- JS Generated -->
+                    </tbody>
+                </table>
+                <div style="margin-top: 24px; display: flex; justify-content: space-between">
+                    <div class="mono" style="font-size: 9px; color: var(--text-secondary)">TOTAL SESSIONS: <span style="color: var(--accent-cyan)">13</span></div>
+                    <div class="mono" style="font-size: 9px; color: var(--text-secondary)">ACTIVE NOW: <span style="color: var(--accent-green)">3</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: WEB INTELLIGENCE -->
+        <div class="card" style="animation-delay: 2.5s; margin-bottom: 32px">
+            <div class="card-header">
+                <div class="card-title">WEB INTELLIGENCE</div>
+                <div class="card-title" style="color: var(--text-tertiary)">TOP 10 DESTINATIONS</div>
+            </div>
+            <div class="web-grid">
+                <div>
+                    <table class="url-table" id="web-table">
+                        <thead>
+                            <tr><th>RANK</th><th>DOMAIN / TARGET</th><th>DURATION</th><th>CATEGORY</th><th>RISK</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="distraction-gauge-box">
+                    <svg class="gauge-svg" width="180" height="140" viewBox="0 0 100 80">
+                        <path class="gauge-bg" d="M 10 70 A 40 40 0 1 1 90 70"></path>
+                        <path class="gauge-fill" id="dist-gauge" d="M 10 70 A 40 40 0 1 1 90 70"></path>
+                    </svg>
+                    <div style="margin-top: -30px">
+                        <div class="gauge-val orbitron"><span class="counter" data-target="42.3" id="dist-val">0</span>%</div>
+                        <div class="gauge-label rajdhani">DISTRACTION SCORE</div>
+                    </div>
+                    <div class="mono" style="font-size: 10px; color: var(--text-secondary); margin-top: 12px">
+                        42.3% OF WEB TIME WAS<br><span style="color: var(--accent-red)">NON-PRODUCTIVE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 5: INPUT ANALYSIS -->
+        <div class="section-row">
+            <div class="card" style="animation-delay: 2.6s">
+                <div class="card-header">
+                    <div class="card-title">HOTKEY PATTERNS</div>
+                </div>
+                <div class="bar-chart" id="hotkey-chart">
+                    <!-- JS Generated -->
+                </div>
+                <div style="display: flex; gap: 20px; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border)">
+                    <div>
+                        <div class="mono" style="font-size: 10px; color: var(--text-secondary)">COPY/PASTE RATIO</div>
+                        <div class="mono" style="font-size: 14px; color: var(--accent-cyan)">0.97:1</div>
+                    </div>
+                    <div>
+                        <div class="mono" style="font-size: 10px; color: var(--text-secondary)">CONTEXT SWITCHING</div>
+                        <div class="mono" style="font-size: 14px; color: var(--accent-amber)">203× HIGH</div>
+                    </div>
+                </div>
+            </div>
+            <div class="card" style="animation-delay: 2.7s">
+                <div class="card-header">
+                    <div class="card-title">MOUSE BEHAVIOUR ANALYSIS</div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: center">
+                    <div>
+                        <div class="rajdhani" style="font-size: 11px; color: var(--text-secondary)">LEFT CLICKS</div>
+                        <div class="orbitron" style="font-size: 28px; margin: 8px 0">144</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 80%"></div></div>
+                    </div>
+                    <div>
+                        <div class="rajdhani" style="font-size: 11px; color: var(--text-secondary)">RIGHT CLICKS</div>
+                        <div class="orbitron" style="font-size: 28px; margin: 8px 0">4</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 5%"></div></div>
+                    </div>
+                    <div>
+                        <div class="rajdhani" style="font-size: 11px; color: var(--text-secondary)">SCROLL DOWN</div>
+                        <div class="orbitron" style="font-size: 28px; margin: 8px 0">131</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 75%"></div></div>
+                    </div>
+                    <div>
+                        <div class="rajdhani" style="font-size: 11px; color: var(--text-secondary)">SCROLL UP</div>
+                        <div class="orbitron" style="font-size: 28px; margin: 8px 0">33</div>
+                        <div class="bar-track"><div class="bar-fill" style="width: 20%"></div></div>
+                    </div>
+                </div>
+                <div class="mono" style="font-size: 10px; color: var(--text-tertiary); margin-top: 24px; text-align: center">
+                    USER IS CONSUMING CONTENT — <span style="color: var(--accent-cyan)">HIGH ENGAGEMENT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 6: WORKFLOW MATRIX -->
+        <div class="card" style="animation-delay: 2.8s; margin-bottom: 32px">
+            <div class="card-header">
+                <div class="card-title">WORKFLOW TRANSITION MATRIX</div>
+            </div>
+            <div class="flow-container">
+                <div class="node node-monitor">
+                    <div style="color: var(--accent-green); margin-bottom: 4px">MONITOR</div>
+                    Antigravity
+                </div>
+                <div class="node node-browser">
+                    <div style="color: var(--accent-cyan); margin-bottom: 4px">BROWSER</div>
+                    comet.exe
+                </div>
+                <div class="node node-system">
+                    <div style="color: var(--text-secondary); margin-bottom: 4px">FILES</div>
+                    explorer
+                </div>
+                
+                <svg class="flow-svg" width="100%" height="100%">
+                    <!-- monitor -> browser -->
+                    <path class="flow-line" d="M 120 100 Q 250 50 380 100" stroke-width="3"></path>
+                    <text x="250" y="70" fill="var(--text-secondary)" font-family="JetBrains Mono" font-size="10">4×</text>
+                    
+                    <!-- browser -> explorer -->
+                    <path class="flow-line" d="M 460 100 Q 590 50 720 100" stroke-width="3"></path>
+                    <text x="590" y="70" fill="var(--text-secondary)" font-family="JetBrains Mono" font-size="10">4×</text>
+                    
+                    <!-- explorer -> browser -->
+                    <path class="flow-line" d="M 720 120 Q 590 170 460 120" stroke-width="3"></path>
+                    <text x="590" y="150" fill="var(--text-secondary)" font-family="JetBrains Mono" font-size="10">4×</text>
+                </svg>
+            </div>
+            <table class="url-table" id="trans-table">
+                <thead>
+                    <tr><th>FROM</th><th>TO</th><th>SWITCHES</th><th>PATTERN</th></tr>
+                </thead>
+                <tbody>
+                    <!-- JS Generated -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- SECTION 7: DISTRACTION ANALYSIS -->
+        <div class="card distraction-card" style="animation-delay: 2.9s">
+            <div class="card-header">
+                <div class="card-title">⚠ DISTRACTION ANALYSIS</div>
+            </div>
+            <div class="section-row" style="margin-bottom: 0">
+                <div>
+                    <table class="url-table" id="dist-table">
+                        <thead>
+                            <tr><th>PLATFORM</th><th>TIME</th><th>VISITS</th><th>CATEGORY</th></tr>
+                        </thead>
+                        <tbody>
+                            <!-- JS Generated -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="padding-left: 40px; border-left: 1px solid var(--border)">
+                    <div class="mono" style="font-size: 11px; margin-bottom: 12px">
+                        <span style="color: var(--text-secondary)">STATUS:</span> <span class="status-badge-elevated">⚠ ELEVATED</span>
+                    </div>
+                    <div class="mono" style="font-size: 11px; margin-bottom: 12px">
+                        <span style="color: var(--text-secondary)">RISK:</span> PRODUCTIVITY IMPACT DETECTED
+                    </div>
+                    <div class="mono" style="font-size: 11px; color: var(--accent-amber); animation: pulse 2s infinite">
+                        <span style="color: var(--text-secondary)">ACTION:</span> FLAG FOR AGENT 1 REVIEW
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const DASHBOARD_DATA = {
+            employee: {
+                name: "Ansh Thakur",
+                machine: "AnshPC / AnshThakur",
+                reportPeriod: "2026-04-01 to 2026-05-01",
+                generatedAt: "2026-05-01 10:26:40"
+            },
+            kpis: {
+                totalTimeMinutes: 7.8,
+                totalKeystrokes: 187,
+                systemUptimeHours: 117.76,
+                totalMouseEvents: 312,
+                appsDetected: 8,
+                sessionsTotal: 13,
+                sessionsActive: 3
+            },
+            applications: [
+                { name: "comet.exe", minutes: 3.0, category: "BROWSER" },
+                { name: "Antigravity.exe", minutes: 2.5, category: "MONITOR" },
+                { name: "WhatsApp.Root.exe", minutes: 0.9, category: "MESSAGING" },
+                { name: "chrome.exe", minutes: 0.4, category: "BROWSER" },
+                { name: "explorer.exe", minutes: 0.4, category: "SYSTEM" },
+                { name: "activitywatch-setup", minutes: 0.3, category: "UTILITY" },
+                { name: "ShellHost.exe", minutes: 0.2, category: "SYSTEM" },
+                { name: "ShellExperienceHost.exe", minutes: 0.05, category: "SYSTEM" }
+            ],
+            websites: [
+                { title: "YouTube - SLAVA FUNK!", domain: "youtube.com", minutes: 0.5, category: "ENTERTAINMENT", risk: "HIGH" },
+                { title: "New Tab", domain: "comet", minutes: 0.3, category: "BROWSER", risk: "LOW" },
+                { title: "Download History", domain: "internal", minutes: 0.2, category: "SYSTEM", risk: "LOW" },
+                { title: "LinkedIn Feed", domain: "linkedin.com", minutes: 0.2, category: "SOCIAL", risk: "MED" },
+                { title: "LinkedIn Messaging", domain: "linkedin.com", minutes: 0.2, category: "SOCIAL", risk: "MED" },
+                { title: "Google Gemini", domain: "gemini.google.com", minutes: 0.2, category: "AI TOOL", risk: "LOW" },
+                { title: "ActivityWatch", domain: "activitywatch.net", minutes: 0.2, category: "UTILITY", risk: "LOW" },
+                { title: "Claude", domain: "claude.ai", minutes: 0.2, category: "AI TOOL", risk: "LOW" },
+                { title: "LinkedIn Connections", domain: "linkedin.com", minutes: 0.1, category: "SOCIAL", risk: "MED" },
+                { title: "Instagram - unfazed.ai", domain: "instagram.com", minutes: 0.1, category: "SOCIAL", risk: "HIGH" }
+            ],
+            sessions: [
+                { start: "2026-05-01 10:25:02", end: null, status: "ACTIVE", machine: "AnshPC" },
+                { start: "2026-03-11 18:27:00", end: null, status: "ACTIVE", machine: "AnshThakur" },
+                { start: "2026-03-11 18:26:26", end: null, status: "ACTIVE", machine: "AnshThakur" },
+                { start: "2026-03-10 23:55:58", end: "2026-03-10 23:58:07", status: "CLOSED", machine: "AnshThakur" },
+                { start: "2026-03-10 23:44:46", end: "2026-03-10 23:47:59", status: "CLOSED", machine: "AnshThakur" }
+            ],
+            timeline: [
+                { time: "23:46:03", app: "Antigravity.exe", title: "Local System Monitoring System", type: "MONITOR" },
+                { time: "23:46:04", app: "chrome.exe", title: "Claude - Google Chrome", type: "AI" },
+                { time: "23:46:08", app: "chrome.exe", title: "LinkedIn Content Strategy Framework", type: "AI" },
+                { time: "23:46:17", app: "chrome.exe", title: "Google Gemini - Google Chrome", type: "AI" },
+                { time: "23:46:19", app: "comet.exe", title: "ActivityWatch - Open-source tracker", type: "UTILITY" },
+                { time: "23:46:22", app: "comet.exe", title: "Messaging | LinkedIn", type: "SOCIAL" },
+                { time: "23:46:24", app: "comet.exe", title: "(18) AL NACER! - YouTube", type: "DISTRACTION" },
+                { time: "23:46:32", app: "comet.exe", title: "Unfazed Workspace", type: "WORK" },
+                { time: "23:56:20", app: "comet.exe", title: "Unfazed.ai (@unfazed.ai) - Instagram", type: "DISTRACTION" },
+                { time: "23:56:28", app: "comet.exe", title: "Connections | LinkedIn", type: "SOCIAL" },
+                { time: "23:56:36", app: "comet.exe", title: "Feed | LinkedIn", type: "SOCIAL" }
+            ],
+            transitions: [
+                { from: "Antigravity.exe", to: "comet.exe", count: 4, pattern: "MONITOR → BROWSER" },
+                { from: "comet.exe", to: "explorer.exe", count: 4, pattern: "BROWSER → FILE" },
+                { from: "explorer.exe", to: "comet.exe", count: 4, pattern: "FILE → BROWSER" },
+                { from: "comet.exe", to: "Antigravity.exe", count: 2, pattern: "BROWSER → MONITOR" },
+                { from: "Antigravity.exe", to: "ShellExperience", count: 2, pattern: "MONITOR → SHELL" }
+            ],
+            hotkeys: {
+                "Ctrl+C": 142, "Ctrl+V": 138, "Alt+Tab": 203, "Ctrl+S": 67, "Ctrl+Z": 34, "Ctrl+T": 48, "Ctrl+W": 29, "Win+L": 4
+            },
+            distraction: {
+                index: 42.3,
+                status: "ELEVATED",
+                items: [
+                    { platform: "YouTube", minutes: 0.5, visits: 2, category: "Entertainment" },
+                    { platform: "Instagram", minutes: 0.1, visits: 3, category: "Social Media" },
+                    { platform: "LinkedIn", minutes: 0.5, visits: 8, category: "Social/Work" }
+                ]
+            }
+        };
+
+        // Initialize UI
+        window.addEventListener('DOMContentLoaded', () => {
+            // document.getElementById('boot-screen').style.display = 'none'; // Not needed when display: none in CSS
+            startCounters();
+            renderCharts();
+            renderTimeline();
+            renderLogs();
+            renderWebData();
+            renderTransitions();
+            animateCharts();
+        });
+
+        function startCounters() {
+            document.querySelectorAll('.counter').forEach(counter => {
+                const target = parseFloat(counter.getAttribute('data-target'));
+                let current = 0;
+                const increment = target / 100;
+                const update = () => {
+                    current += increment;
+                    if (current < target) {
+                        counter.innerText = target % 1 === 0 ? Math.floor(current) : current.toFixed(2);
+                        requestAnimationFrame(update);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+                update();
+            });
+        }
+
+        function renderCharts() {
+            const appChart = document.getElementById('app-chart');
+            const maxMin = Math.max(...DASHBOARD_DATA.applications.map(a => a.minutes));
+            
+            DASHBOARD_DATA.applications.forEach(app => {
+                const width = (app.minutes / maxMin) * 100;
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+                row.innerHTML = `
+                    <div class="bar-name">${app.name}</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: ${width}%"></div></div>
+                    <div class="bar-val">${app.minutes.toFixed(1)} min</div>
+                    <div class="badge badge-${app.category.toLowerCase()}">${app.category}</div>
+                `;
+                appChart.appendChild(row);
+            });
+
+            const hotkeyChart = document.getElementById('hotkey-chart');
+            const maxKeys = Math.max(...Object.values(DASHBOARD_DATA.hotkeys));
+            Object.entries(DASHBOARD_DATA.hotkeys).forEach(([key, count]) => {
+                const width = (count / maxKeys) * 100;
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+                row.style.gridTemplateColumns = '80px 1fr 60px';
+                row.innerHTML = `
+                    <div class="bar-name">${key}</div>
+                    <div class="bar-track"><div class="bar-fill" style="width: ${width}%"></div></div>
+                    <div class="bar-val" style="color: var(--text-primary)">${count}×</div>
+                `;
+                hotkeyChart.appendChild(row);
+            });
+        }
+
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            DASHBOARD_DATA.timeline.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'timeline-item';
+                div.innerHTML = `
+                    <div class="timeline-row">
+                        <div class="timeline-time">${item.time}</div>
+                        <div class="timeline-sep">▸</div>
+                        <div class="timeline-app">${item.app}</div>
+                        <div class="timeline-title">${item.title}</div>
+                        ${item.type === 'DISTRACTION' ? '<div class="badge-distraction rajdhani">⚠ DISTRACTION</div>' : ''}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderLogs() {
+            const container = document.getElementById('log-container').querySelector('tbody');
+            DASHBOARD_DATA.sessions.forEach(s => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${s.start.split(' ')[1]}</td>
+                    <td class="log-status ${s.status === 'ACTIVE' ? 'log-active' : ''}">
+                        <div class="status-dot ${s.status === 'ACTIVE' ? 'dot-active' : 'dot-standby'}" style="width: 5px; height: 5px"></div>
+                        ${s.status}
+                    </td>
+                    <td style="color: ${s.machine === 'AnshPC' ? 'var(--accent-amber)' : 'var(--accent-cyan)'}">${s.machine}</td>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function renderWebData() {
+            const table = document.getElementById('web-table').querySelector('tbody');
+            DASHBOARD_DATA.websites.forEach((site, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td style="color: var(--text-tertiary)">0${index + 1}</td>
+                    <td>${site.title}</td>
+                    <td class="mono" style="color: var(--accent-cyan)">${site.minutes} min</td>
+                    <td class="rajdhani" style="font-size: 10px; color: var(--text-secondary)">${site.category}</td>
+                    <td><span class="risk-badge risk-${site.risk.toLowerCase()}">${site.risk}</span></td>
+                `;
+                table.appendChild(row);
+            });
+
+            const distTable = document.getElementById('dist-table').querySelector('tbody');
+            DASHBOARD_DATA.distraction.items.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.platform}</td>
+                    <td class="mono" style="color: var(--accent-red)">${item.minutes} min</td>
+                    <td class="mono">${item.visits}</td>
+                    <td class="rajdhani">${item.category}</td>
+                `;
+                distTable.appendChild(row);
+            });
+        }
+
+        function renderTransitions() {
+            const container = document.getElementById('trans-table').querySelector('tbody');
+            DASHBOARD_DATA.transitions.forEach(t => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="mono" style="color: var(--accent-cyan)">${t.from}</td>
+                    <td class="mono" style="color: var(--accent-green)">${t.to}</td>
+                    <td class="mono">${t.count}</td>
+                    <td class="rajdhani" style="font-size: 10px; color: var(--text-secondary)">${t.pattern}</td>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function animateCharts() {
+            // Donut animation
+            setTimeout(() => {
+                document.getElementById('donut-active').style.strokeDashoffset = '0';
+                document.getElementById('donut-monitor').style.strokeDashoffset = '220'; // 19% of 283
+            }, 500);
+
+            // Gauge animation
+            setTimeout(() => {
+                const distIndex = DASHBOARD_DATA.distraction.index;
+                const offset = 212 - (distIndex / 100) * 212;
+                document.getElementById('dist-gauge').style.strokeDashoffset = offset;
+            }, 2000);
+        }
+
+        function triggerReport() {
+            const overlay = document.getElementById('processing-overlay');
+            overlay.style.display = 'flex';
+            const bar = document.getElementById('proc-bar');
+            bar.style.width = '0%';
+            
+            setTimeout(() => bar.style.width = '100%', 100);
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                // Re-start counters for effect
+                startCounters();
+            }, 3000);
+        }
+
+        // Timer
+        setInterval(() => {
+            const now = new Date();
+            const time = now.toTimeString().split(' ')[0];
+            document.getElementById('countdown').innerText = time;
+        }, 1000);
+    </script>
+</body>
+</html>
