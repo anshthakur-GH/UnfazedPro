@@ -19,13 +19,13 @@ const KPICard = ({ title, value, prefix = '', suffix = '', trend, trendLabel, ty
       
       <div className="mt-4 z-10 relative">
         <div className="kpi-value">
-          {prefix}{type === 'number' ? animatedValue.toLocaleString() : animatedValue}{suffix}
+          {prefix}{type === 'number' ? animatedValue.toLocaleString() : value}{suffix}
         </div>
         
         {trend && (
           <div className={`flex items-center gap-1.5 text-xs font-semibold ${trend > 0 ? 'text-accent-primary' : 'text-danger'}`}>
             {trend > 0 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-            <span>{Math.abs(trend)}% vs last month</span>
+            <span>{trendLabel || `${Math.abs(trend)}% vs last month`}</span>
           </div>
         )}
       </div>
@@ -65,10 +65,10 @@ const sparklineData = [
 ];
 
 const donutData = [
-  { name: 'Electronics', value: 45, color: '#FF7300' },
-  { name: 'Clothes', value: 25, color: '#FFAA00' },
-  { name: 'Furniture', value: 20, color: '#CC5500' },
-  { name: 'Shoes', value: 10, color: '#993300' },
+  { name: 'Chrome / Browser', value: 38, color: '#FF7300' },
+  { name: 'Slack', value: 24, color: '#FFAA00' },
+  { name: 'Excel / Office', value: 18, color: '#CC5500' },
+  { name: 'Other Apps', value: 10, color: '#993300' },
 ];
 
 const MainContent = () => {
@@ -80,10 +80,9 @@ const MainContent = () => {
   }, []);
 
   const customers = [
-    { id: 1, name: 'Acme Corp', email: 'contact@acme.co', deals: 12, value: 142000, avatar: 'Acme' },
-    { id: 2, name: 'GlobalTech', email: 'info@global.tech', deals: 8, value: 89500, avatar: 'Tech' },
-    { id: 3, name: 'Stark Industries', email: 'hello@stark.com', deals: 24, value: 540000, avatar: 'Stark' },
-    { id: 4, name: 'Wayne Ent', email: 'bats@wayne.com', deals: 15, value: 320000, avatar: 'Wayne' },
+    { id: 1, name: 'Aryan Mehta', email: 'aryan@company.com', deals: 'Phase 2 (Visual)', value: '22.4%', avatar: 'Acme' },
+    { id: 2, name: 'Priya Sharma', email: 'priya@company.com', deals: 'Phase 1 (Metadata)', value: '14.7%', avatar: 'Tech' },
+    { id: 3, name: 'Rahul Verma', email: 'rahul@company.com', deals: 'Phase 1 (Metadata)', value: '31.2%', avatar: 'Stark' },
   ];
 
   return (
@@ -122,19 +121,19 @@ const MainContent = () => {
 
       {/* KPI Cards Row */}
       <div className={`grid grid-cols-4 gap-5 mb-6 transition-all duration-500 delay-100 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        <KPICard title="Net Revenue" value={3131021} prefix="$" trend={12.4} />
-        <KPICard title="ARR" value={14205000} prefix="$" trend={8.2} />
-        <KPICard title="Quarterly Goal" value={84} type="progress" />
-        <KPICard title="New Orders" value={1284} trend={-2.1} />
+        <KPICard title="EMPLOYEES MONITORED" value={24} trend={1} trendLabel="↑ 3 since last month" />
+        <KPICard title="AVG ACTIVE HOURS / DAY" value={"6.4 hrs"} type="text" trend={1} trendLabel="↑ 8% vs last month" />
+        <KPICard title="AVG DISTRACTION RATE" value={18} type="progress" />
+        <KPICard title="AUTOMATION PROPOSALS" value={7} trend={1} trendLabel="↑ 2 this quarter" />
       </div>
 
       {/* Middle Dashboard Row */}
       <div className={`grid grid-cols-12 gap-5 mb-6 transition-all duration-500 delay-200 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         
-        {/* Sales Overview */}
+        {/* App Events Overview */}
         <div className="col-span-6 card-premium p-6">
           <div className="flex justify-between items-start mb-6">
-            <h2 className="text-base font-bold">Sales Overview</h2>
+            <h2 className="text-base font-bold">App Events Overview</h2>
             <button className="text-text-muted hover:text-text-primary"><MoreVertical size={18} /></button>
           </div>
           
@@ -161,15 +160,15 @@ const MainContent = () => {
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-mono font-bold text-text-primary">102k</span>
-                <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold">Weekly Visits</span>
+                <span className="text-2xl font-mono font-bold text-text-primary">142k</span>
+                <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold">MONTHLY EVENTS</span>
               </div>
             </div>
             
             <div className="w-1/2 pl-6">
               <div className="mb-6">
-                <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold block mb-1">Number of Sales</span>
-                <span className="text-xl font-mono font-bold text-text-primary">$71,020</span>
+                <span className="text-[10px] uppercase tracking-widest text-text-muted font-bold block mb-1">TOTAL APP EVENTS</span>
+                <span className="text-xl font-mono font-bold text-text-primary">1.24M</span>
               </div>
               
               <div className="flex flex-col gap-3">
@@ -195,10 +194,10 @@ const MainContent = () => {
                 <Users2 className="text-accent-primary w-5 h-5" />
               </div>
               <div>
-                <span className="kpi-label block mb-1">New Customers</span>
+                <span className="kpi-label block mb-1">PHASE 2 ACTIVE</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-mono font-bold text-text-primary">862</span>
-                  <span className="text-xs font-semibold text-danger">-8%</span>
+                  <span className="text-2xl font-mono font-bold text-text-primary">3</span>
+                  <span className="text-xs font-semibold text-accent-primary">↑1 this week</span>
                 </div>
               </div>
             </div>
@@ -210,10 +209,9 @@ const MainContent = () => {
                 <CircleDollarSign className="text-accent-primary w-5 h-5" />
               </div>
               <div>
-                <span className="kpi-label block mb-1">Total Profit</span>
+                <span className="kpi-label block mb-1">DISTRACTION TREND</span>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-mono font-bold text-text-primary">$25.6k</span>
-                  <span className="text-xs font-semibold text-accent-primary">+42%</span>
+                  <span className="text-2xl font-mono font-bold text-text-primary">18.3% avg</span>
                 </div>
               </div>
             </div>
@@ -223,8 +221,8 @@ const MainContent = () => {
         {/* Sparkline Area Chart */}
         <div className="col-span-3 card-premium p-6 flex flex-col relative overflow-hidden">
           <div className="z-10 mb-4">
-            <span className="kpi-label block mb-1">Total Profit</span>
-            <span className="text-2xl font-mono font-bold text-text-primary">$136,755.77</span>
+            <span className="kpi-label block mb-1">DISTRACTION TREND</span>
+            <span className="text-2xl font-mono font-bold text-text-primary">18.3% avg</span>
           </div>
           <div className="absolute inset-x-0 bottom-0 h-32 w-full animate-draw-svg">
             <ResponsiveContainer width="100%" height="100%">
@@ -254,10 +252,10 @@ const MainContent = () => {
       {/* Bottom Row */}
       <div className={`grid grid-cols-12 gap-5 mb-8 transition-all duration-500 delay-300 ease-out ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
         
-        {/* Customer Table */}
+        {/* Employee Table */}
         <div className="col-span-8 card-premium overflow-hidden flex flex-col">
           <div className="p-5 border-b border-border-card flex justify-between items-center">
-            <h2 className="text-base font-bold">Top Customers</h2>
+            <h2 className="text-base font-bold">Employee List</h2>
             <button className="text-xs font-bold text-accent-primary hover:text-accent-secondary uppercase tracking-widest transition-colors flex items-center gap-1">
               View All <ArrowRight size={14} />
             </button>
@@ -267,13 +265,13 @@ const MainContent = () => {
               <thead>
                 <tr>
                   <th className="table-header">
-                    <div className="flex items-center gap-2">Customer <ArrowUpDown size={12} className="opacity-50" /></div>
+                    <div className="flex items-center gap-2">EMPLOYEE <ArrowUpDown size={12} className="opacity-50" /></div>
                   </th>
                   <th className="table-header text-right">
-                    <div className="flex items-center justify-end gap-2">Deals <ArrowUpDown size={12} className="opacity-50" /></div>
+                    <div className="flex items-center justify-end gap-2">PHASE <ArrowUpDown size={12} className="opacity-50" /></div>
                   </th>
                   <th className="table-header text-right">
-                    <div className="flex items-center justify-end gap-2">Total Value <ArrowUpDown size={12} className="opacity-50" /></div>
+                    <div className="flex items-center justify-end gap-2">DISTRACTION RATE <ArrowUpDown size={12} className="opacity-50" /></div>
                   </th>
                 </tr>
               </thead>
@@ -290,7 +288,7 @@ const MainContent = () => {
                       </div>
                     </td>
                     <td className="table-cell text-right font-mono text-text-secondary">{c.deals}</td>
-                    <td className="table-cell text-right font-mono font-bold text-text-primary">${c.value.toLocaleString()}</td>
+                    <td className="table-cell text-right font-mono font-bold text-text-primary">{c.value}</td>
                   </tr>
                 ))}
               </tbody>
@@ -301,16 +299,15 @@ const MainContent = () => {
         {/* Premium CTA */}
         <div className="col-span-4 rounded-[14px] p-6 flex flex-col justify-center relative overflow-hidden" style={{ background: 'radial-gradient(circle at top right, rgba(255,115,0,0.15) 0%, rgba(22,22,22,1) 70%)', border: '1px solid var(--border-card)' }}>
           <div className="z-10">
-            <span className="inline-block px-2.5 py-1 bg-accent-primary/10 text-accent-primary border border-accent-primary/20 rounded-full text-xs font-bold mb-4">PREMIUM PLAN</span>
+            <span className="inline-block px-2.5 py-1 bg-accent-primary/10 text-accent-primary border border-accent-primary/20 rounded-full text-xs font-bold mb-4">AGENT 2 READY</span>
             <div className="mb-2">
-              <span className="text-4xl font-mono font-bold text-text-primary">$30</span>
-              <span className="text-text-muted text-sm ml-1">/ mo per user</span>
+              <span className="text-4xl font-mono font-bold text-text-primary">Run Analysis</span>
             </div>
             <p className="text-text-secondary text-sm mb-6 leading-relaxed">
-              Unlock advanced AI workforce analytics, unlimited data retention, and custom report building capabilities.
+              Aryan Mehta · 847 sequences captured
             </p>
             <button className="w-full bg-accent-primary hover:bg-[#FF8800] text-base font-bold py-3 px-4 rounded-full transition-all hover:-translate-y-0.5 hover:shadow-[0_4px_14px_rgba(255,115,0,0.3)]">
-              Upgrade Now
+              Run Agent 2 Now
             </button>
           </div>
           {/* Subtle bg glow */}

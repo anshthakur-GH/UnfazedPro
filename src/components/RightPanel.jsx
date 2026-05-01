@@ -10,22 +10,22 @@ const RightPanel = () => {
   }, []);
 
   const notifications = [
-    { id: 1, icon: UserPlus, text: 'New user registered', time: '2m ago', color: 'text-accent-primary' },
-    { id: 2, icon: ShoppingBag, text: 'New order #8912', time: '1h ago', color: 'text-text-primary' },
-    { id: 3, icon: Wallet, text: 'Payment received', time: '3h ago', color: 'text-success' },
-    { id: 4, icon: Mail, text: 'New support ticket', time: '5h ago', color: 'text-warning' },
+    { id: 1, icon: UserPlus, text: 'Phase 2 activated — Aryan Mehta', time: 'Just now', color: 'text-accent-primary' },
+    { id: 2, icon: ShoppingBag, text: 'Daily report generated — 24 employees', time: '1h ago', color: 'text-text-primary' },
+    { id: 3, icon: Wallet, text: 'Agent 1 completed — Priya Sharma', time: '6h ago', color: 'text-success' },
+    { id: 4, icon: Mail, text: 'Distraction report emailed to manager', time: 'Today', color: 'text-warning' },
   ];
 
   const activities = [
-    { id: 1, action: 'Deployed v2.4.1', time: 'Today, 09:42 AM' },
-    { id: 2, action: 'Database backup', time: 'Yesterday, 11:00 PM' },
-    { id: 3, action: 'Updated security policies', time: 'Mon, 02:15 PM' },
+    { id: 1, action: 'New sequence folder assembled', time: 'Just now' },
+    { id: 2, action: '203 app events logged today', time: '1h ago' },
+    { id: 3, action: 'Idle threshold exceeded — Rahul Verma', time: '1 day ago' },
   ];
 
   const contacts = [
-    { id: 1, name: 'Sarah Jenkins', role: 'Sales Director', avatar: 'Sarah' },
-    { id: 2, name: 'Mike Chen', role: 'Product Manager', avatar: 'Mike' },
-    { id: 3, name: 'Emma Watson', role: 'Lead Designer', avatar: 'Emma' },
+    { id: 1, name: 'Aryan Mehta', role: 'Phase 2 — Visual', avatar: 'Sarah' },
+    { id: 2, name: 'Priya Sharma', role: 'Phase 1 — Metadata', avatar: 'Mike' },
+    { id: 3, name: 'Rahul Verma', role: 'Phase 1 — Metadata', avatar: 'Emma' },
   ];
 
   return (
@@ -85,7 +85,7 @@ const RightPanel = () => {
 
       {/* Contacts */}
       <div>
-        <h3 className="nav-section-label mb-4 px-0">Contacts</h3>
+        <h3 className="nav-section-label mb-4 px-0">Monitored Employees</h3>
         <div className="flex flex-col gap-1">
           {contacts.map((contact, i) => {
             const isActive = activeContact === contact.id;

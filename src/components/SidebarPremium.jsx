@@ -13,7 +13,7 @@ const SidebarPremium = () => {
   const navItems = [
     { label: 'Overview', icon: LayoutDashboard },
     { label: 'Analytics', icon: BarChart3 },
-    { label: 'Customers', icon: Users },
+    { label: 'Employees', icon: Users },
   ];
 
   return (
@@ -26,8 +26,8 @@ const SidebarPremium = () => {
           className="w-8 h-8 rounded-full border border-border-card"
         />
         <div className="flex flex-col">
-          <span className="text-text-primary text-sm font-semibold leading-tight">Alex Rivera</span>
-          <span className="text-text-muted text-[11px] leading-tight mt-0.5">Pro Member</span>
+          <span className="text-text-primary text-sm font-semibold leading-tight">Admin</span>
+          <span className="text-text-muted text-[11px] leading-tight mt-0.5">UnfazedPro</span>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ const SidebarPremium = () => {
 
           <div className="nav-item hover:bg-card-hover">
             <CreditCard className="w-4 h-4" />
-            <span>Billing</span>
+            <span>Reports</span>
           </div>
         </div>
       </div>
