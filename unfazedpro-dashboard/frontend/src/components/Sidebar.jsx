@@ -3,19 +3,33 @@ import { LayoutGrid, Users, BarChart3, ShieldAlert, FileText, History, Settings,
 
 const SidebarItem = ({ icon: Icon, label, active }) => (
   <div style={{
+    position: 'relative',
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '10px 16px',
+    padding: '12px 16px',
     borderRadius: '8px',
     cursor: 'pointer',
-    background: active ? 'var(--accent-green)' : 'transparent',
-    color: active ? 'var(--bg-primary)' : 'var(--text-secondary)',
+    color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
     marginBottom: '4px',
-    fontWeight: active ? '600' : '400'
+    fontWeight: active ? '600' : '400',
+    transition: 'color 0.2s'
   }}>
-    <Icon size={18} />
-    <span>{label}</span>
+    {active && (
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'rgba(255, 115, 0, 0.1)',
+        borderRadius: '8px',
+        border: '1px solid rgba(255, 115, 0, 0.2)',
+        zIndex: 0
+      }} />
+    )}
+    <Icon size={18} style={{ zIndex: 1, color: active ? 'var(--accent-primary)' : 'inherit' }} />
+    <span style={{ zIndex: 1, fontSize: '14px' }}>{label}</span>
   </div>
 )
 
@@ -24,45 +38,57 @@ const Sidebar = () => {
     <div style={{
       width: 'var(--sidebar-width)',
       background: 'var(--bg-sidebar)',
-      borderRight: '1px solid var(--border-color)',
+      borderRight: '1px solid var(--border-subtle)',
       display: 'flex',
       flexDirection: 'column',
-      padding: '24px 16px'
+      padding: '24px 16px',
+      height: '100vh'
     }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '32px' }}>
-        <div style={{ width: '32px', height: '32px', background: 'var(--accent-green)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--bg-primary)', fontWeight: '700' }}>U</div>
-        <span style={{ fontSize: '18px', fontWeight: '700', letterSpacing: '-0.5px' }}>UnfazedPro</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px', paddingLeft: '8px' }}>
+        <div style={{ 
+          width: '36px', 
+          height: '36px', 
+          background: 'linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%)', 
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 14px rgba(255, 115, 0, 0.3)'
+        }}>
+           <span style={{ color: '#000', fontWeight: '800', fontSize: '18px' }}>U</span>
+        </div>
+        <span style={{ fontSize: '20px', fontWeight: '700', letterSpacing: '-0.03em', color: 'var(--text-primary)' }}>UnfazedPro</span>
       </div>
 
       <div style={{
-        background: 'var(--bg-tertiary)',
-        padding: '8px 12px',
-        borderRadius: '6px',
+        background: 'var(--bg-base)',
+        padding: '10px 14px',
+        borderRadius: '10px',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
-        marginBottom: '24px'
+        gap: '10px',
+        marginBottom: '32px',
+        border: '1px solid var(--border-subtle)'
       }}>
-        <Search size={14} color="var(--text-muted)" />
-        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Search...</span>
-        <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '10px' }}>⌘K</span>
+        <Search size={16} color="var(--text-muted)" />
+        <span style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Search...</span>
+        <span style={{ marginLeft: 'auto', color: 'var(--text-muted)', fontSize: '11px', fontWeight: '700' }}>⌘K</span>
       </div>
 
-      <div style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Dashboards</div>
-      <SidebarItem icon={LayoutGrid} label="Overview" active />
+      <div className="section-label" style={{ marginBottom: '16px', paddingLeft: '8px' }}>Platform</div>
+      <SidebarItem icon={LayoutGrid} label="Dashboard" active />
       <SidebarItem icon={Users} label="Employees" />
       <SidebarItem icon={BarChart3} label="Analytics" />
-      <SidebarItem icon={ShieldAlert} label="Agents" />
+      <SidebarItem icon={ShieldAlert} label="AI Agents" />
 
-      <div style={{ fontSize: '10px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px', marginTop: '24px' }}>Settings</div>
+      <div className="section-label" style={{ marginBottom: '16px', marginTop: '32px', paddingLeft: '8px' }}>Intelligence</div>
       <SidebarItem icon={FileText} label="Reports" />
       <SidebarItem icon={History} label="Audit Log" />
       <SidebarItem icon={Settings} label="Settings" />
-      <SidebarItem icon={HelpCircle} label="Help Centre" />
 
-      <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div style={{ color: 'var(--accent-green)', fontWeight: '800', fontSize: '14px' }}>◌◌◌</div>
-        <span style={{ fontWeight: '700', fontSize: '12px' }}>UNFAZEDPRO</span>
+      <div style={{ marginTop: 'auto', padding: '16px', background: 'var(--bg-card)', borderRadius: '12px', border: '1px solid var(--border-subtle)' }}>
+        <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-primary)', marginBottom: '4px' }}>PRO SYSTEM</div>
+        <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Enterprise Monitoring Active</div>
       </div>
     </div>
   )

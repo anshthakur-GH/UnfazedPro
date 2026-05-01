@@ -1,29 +1,31 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
 
 :root {
-  --bg-primary:       #111111;
-  --bg-secondary:     #1a1a1a;
-  --bg-tertiary:      #222222;
-  --bg-sidebar:       #141414;
-  --bg-right-panel:   #141414;
+  /* Surfaces & Backgrounds */
+  --bg-base:          #0D0D0D;
+  --bg-sidebar:       #111111;
+  --bg-card:          #161616;
+  --bg-card-hover:    #1E1E1E;
 
-  --accent-green:     #a8ff3e;
-  --accent-green-dim: #6fcf2a;
-  --accent-green-glow:rgba(168, 255, 62, 0.1);
+  /* Accents & Glows */
+  --accent-primary:   #FF7300;
+  --accent-secondary: #FFAA00;
+  --accent-glow:      rgba(255, 115, 0, 0.15);
+  --accent-border:    rgba(255, 115, 0, 0.25);
 
-  --text-primary:     #ffffff;
-  --text-secondary:   #a0a0a0;
+  /* Typography */
+  --text-primary:     #F0F0F0;
+  --text-secondary:   #888888;
   --text-muted:       #555555;
 
-  --border-color:     #2a2a2a;
-  --positive-delta:   #a8ff3e;
-  --negative-delta:   #ff4444;
-
-  --sidebar-active-bg:  #a8ff3e;
-  --sidebar-active-text:#111111;
+  /* Borders & Shadows */
+  --border-subtle:    rgba(255, 255, 255, 0.06);
+  --card-radius:      14px;
+  --card-shadow:      0 1px 3px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03);
+  --hover-shadow:     0 4px 12px rgba(255,115,0,0.05), 0 0 0 1px rgba(255,115,0,0.25);
   
-  --sidebar-width: 220px;
-  --right-panel-width: 240px;
+  --sidebar-width: 240px;
+  --right-panel-width: 260px;
 }
 
 * {
@@ -33,22 +35,74 @@
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
+  font-family: 'Sora', sans-serif;
+  background-color: var(--bg-base);
   color: var(--text-primary);
-  background: var(--bg-primary);
+  font-size: 14px;
   overflow: hidden;
 }
 
-.metric-value   { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
-.metric-label   { font-size: 11px; font-weight: 400; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-.section-title  { font-size: 15px; font-weight: 600; }
-.card-title     { font-size: 13px; font-weight: 500; }
-.small-text     { font-size: 11px; color: var(--text-secondary); }
-.delta-badge    { font-size: 11px; font-weight: 500; padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; }
+/* Metric Typography */
+.metric-font {
+  font-family: 'Space Mono', monospace;
+}
+
+.metric-kpi {
+  font-family: 'Space Mono', monospace;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+/* Card Styles */
+.premium-card {
+  background: var(--bg-card);
+  border-radius: var(--card-radius);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, background 0.2s ease-out;
+  border: 1px solid var(--border-subtle);
+}
+
+.premium-card:hover {
+  transform: translateY(-2px);
+  background: var(--bg-card-hover);
+  box-shadow: var(--hover-shadow);
+}
+
+.mesh-gradient {
+  background: radial-gradient(circle at top right, rgba(255,115,0,0.15) 0%, rgba(22,22,22,1) 70%);
+  position: relative;
+  overflow: hidden;
+}
+
+.mesh-gradient::after {
+  content: '';
+  position: absolute;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 40px;
+  background: rgba(255, 115, 0, 0.1);
+  filter: blur(20px);
+  pointer-events: none;
+}
 
 /* Scrollbar */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--bg-card-hover); border-radius: 10px; }
